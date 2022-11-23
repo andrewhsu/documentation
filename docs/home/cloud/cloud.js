@@ -99,7 +99,7 @@ export default function HomepageFeatures() {
     <section className={styles.features}>
       <div class={clsx('border border-primary')}>
       <div className="container">
-        <div className="row">
+        <div className={styles.customGrid}>
             {FeatureList.map((props, idx) => (
               <Feature key={idx} {...props} />
             ))}

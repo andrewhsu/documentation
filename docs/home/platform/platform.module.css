@@ -22,14 +22,13 @@
   padding-bottom: 20px;
 }
 
+
 .body_text{
   font-size: 14px;
   font-weight: 400;
   line-height: 24px;
   margin: 6px 0 0;
-  height: 72px;
-  width: 250px;
-  
+  min-height: 72px;
 }
 
 .learn{
@@ -50,4 +49,21 @@
 }
 .padding{
   padding-bottom: 20px;
+}
+
+.box{
+  height: 160px;
+  width: 280px;
+}
+
+
+.container{
+  width: 300px;
+}
+
+.customGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(auto, 1fr));
 }

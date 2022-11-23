@@ -75,18 +75,20 @@ function Feature({image, title, description, url}) {
             <img src={image} className={styles.featureSvg} alt={title} />
             </a>
           </div>
-        <div className="text--left padding-horiz--md">
-          <a href={url}>
-          <span className={styles.body_title}>{title}</span>
-          </a>
-          <div className={styles.body_text}>
-            <p>{description}</p>
+        <div className={styles.box}>
+          <div className="text--left padding-horiz--md">
+            <a href={url}>
+            <span className={styles.body_title}>{title}</span>
+            </a>
+            <div className={styles.body_text}>
+              {description}
+
+            </div>
+            <div className={styles.learn}>
+                <a href={url}><p>Learn more -> </p></a>
+              </div>
 
           </div>
-          <div className={styles.learn}>
-              <a href={url}><p>Learn more -> </p></a>
-            </div>
-
         </div>
       </div>
     </div>
@@ -99,7 +101,7 @@ export default function HomepageFeatures() {
     <section className={styles.features}>
       <div class={clsx('border border-primary')}>
       <div className="container">
-        <div className="row">
+        <div className={styles.customGrid}>
             {FeatureList.map((props, idx) => (
               <Feature key={idx} {...props} />
             ))}
