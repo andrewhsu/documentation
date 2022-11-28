@@ -13,9 +13,14 @@ After you change a node-level property setting, you must restart the node for th
 
 ### Required properties 
 
+:::note
+You must include the following required properties in your configuration. If you omit them, Redpanda will not start.
+:::
+
 | Property | Description |
 | :-------- | :----------- |
-| data_directory | The folder where Redpanda streaming data files are stored. <br/><br/>Default: /var/lib/redpanda/data |
+| data_directory | The folder where Redpanda streaming data files are stored. |
+
 
 ### Optional properties 
 
@@ -33,7 +38,7 @@ After you change a node-level property setting, you must restart the node for th
 | empty_seed_starts_cluster | Controls how a new cluster is formed. This property must have the same value in all nodes in a cluster.<br/><br/>Recommended: False<br/>Default: True, for backward compatibility | 
 | kafka_api | Address of the Kafka API that handles requests. <br/><br/>Default: 127.0.0.1:9092 |
 | kafka_api_tls | Transport Layer Security (TLS) configuration for the Kafka API endpoint. <br/><br/>Default: Null |
-| node_id | A number that uniquely identifies the node within the cluster. This property must not be changed after a node joins the cluster.<br/><br/>If unset, Redpanda assigns one automatically. If set, it must be a positive number. <br/><br/>Default: Null |
+| node_id | A number that uniquely identifies the node within the cluster. This property must not be changed after a node joins the cluster. If unset, Redpanda assigns one automatically. If set, it must be a positive number.  |
 | rack | A rack is a label that identifies a failure zone. Apply the same label to all nodes in the same failure zone. When enable_rack_awareness is set to true at the cluster level, the system uses the rack labels to spread partition replicas across different failure zones. <br/><br/>Default: Null |
 | rpc_server | Remote Procedure Call (RPC) server IP address. <br/><br/>Default: 127.0.0.1:33145 |
 | rpc_server_tls | TLS configuration for RPC server. <br/><br/>Default: Null |

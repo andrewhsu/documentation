@@ -7,10 +7,14 @@ After you change a node-level property setting, you must restart the node for th
 
 ### Required properties 
 
+:::note
+You must include the following required properties in your configuration. If you omit them, `redpanda` will not start.
+:::
+
 | Property | Description |
 | :-------- | :----------- |
-| node_id | A number that identifies the node within the cluster. This value can be assigned automatically by a deployment tool, or it can be assigned by the user. Each node must have a unique node_id, and nodes should be numbered in sequence. Note: This property is required, and must not be changed once a node joins a cluster. <br/><br/>Default: Null |
-| data_directory | The folder where Redpanda streaming data files are stored. <br/><br/>Default: /var/lib/redpanda/data |
+| data_directory | The folder where Redpanda streaming data files are stored. <br/><br/> |
+| node_id | A number that identifies the node within the cluster. This value can be assigned automatically by a deployment tool, or it can be assigned by the user. Each node must have a unique `node_id`, and nodes should be numbered in sequence. This property must not be changed once a node joins a cluster. <br/><br/> |
 
 ### Optional properties 
 
