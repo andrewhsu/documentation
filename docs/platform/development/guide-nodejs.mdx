@@ -1,185 +1,212 @@
 ---
-title: Using NodeJS with Redpanda
+title: Node.js Code Example
 ---
 
 <head>
-    <meta name="title" content="Using NodeJS with Redpanda | Redpanda Docs"/>
-    <meta name="description" content="Implementing producer and consumer in NodeJS to work with Redpanda."/>
+    <meta name="title" content="Node.js Code Example | Redpanda Docs"/>
+    <meta name="description" content="How to produce to and consume from Redpanda using Node.js."/>
 </head>
+
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 
 If you haven't already, install Node by following the appropriate steps for
 your OS [here](https://nodejs.org/en/download/package-manager/).
 
-As you may have heard by now, Redpanda is Kafka® API-compatible, which means
-that although Redpanda is relatively new, you can leverage the countless client
-libraries created for Kafka® (if you find something that is not supported,
+Redpanda is Kafka API-compatible, which means
+that you can leverage the countless client
+libraries created for Kafka (if you find something that is not supported,
 reach out to our team on our <a href="https://redpanda.com/slack">Slack</a>).
-In this case we will use [kafkajs](https://kafka.js.org/).
+In this example you will use [kafkajs](https://kafka.js.org/).
 
 ```bash
-#create and enter the project folder
+# Create and enter the project folder
 mkdir redpanda-node
 cd redpanda-node
-#generate package.json
+# Generate package.json (use the default values)
 npm init
-#install needed dependencies
+# Install required dependencies
 npm i -D typescript
 npm i -D @types/node
 npm i kafkajs
 npm i uuid
 npm i -D @types/uuid
-#generate tsconfig.json
+# Generate tsconfig.json
 tsc --init
 ```
 
-## Setting up Redpanda and creating a topic
+## Set up a Redpanda environment
 
-If you are on MacOS, check out [this post](../../quickstart/quick-start-macos).
-If you're on linux, follow the instructions in the
-[Quick start section](../../quickstart/quick-start-linux)
-Note: please follow only this section. If you do the production section, it
-will optimize your machine for Redpanda, which might affect your experience
-with desktop applications and other services. Be especially careful with
-`sudo rpk redpanda tune all` you probably don't want to run that on your personal
-workstation.
+Follow the [Quickstarts](../../quickstart) to spin up a development
+environment on your platform of choice.
 
+:::caution
+If you're running Redpanda on your laptop, or in a shared development
+environment, then avoid Redpanda's optimized production settings. Running
+`sudo rpk redpanda tune all` or manually configuring Redpanda for production
+might affect your experience with other applications running on your machine.
+:::
 
-After Redpanda is installed and running, you will create the first topic
+## Create a topic
+
+The easiest way to create topics is using
+[rpk](../reference/rpk/rpk-commands.mdx):
+
 ```bash
 $ rpk topic create chat-room
-  Created topic 'chat-room'. Partitions: 1, replicas: 1, configuration:
-  'cleanup.policy':'delete'
+TOPIC      STATUS
+chat-room  OK
 ```
-This will create a topic named `chat-room`, with one partition and one replica.
-You can also see all created topics with:
+
+The preceding command created a topic named `chat-room`, with the default number of
+partitions and replicas. You can list all created topics with:
 ```bash
 $ rpk topic list
-  Name       Partitions  Replicas  
-  chat-room  1           1
+NAME       PARTITIONS  REPLICAS
+chat-room  1           1
 ```
 
-With that out of the way, we can get started. To have a working chat we need to
-receive and send messages, so we need to create a consumer and a producer.
+You can create topics programmatically too:
 
-## Producer Setup
+```javascript title="src/admin.ts"
+import {Kafka} from "kafkajs"
 
-```javascript
-// src/producer.ts
-import {Kafka} from 'kafkajs';
+const redpanda = new Kafka({
+  brokers: ["localhost:9092"]
+})
+const admin = redpanda.admin()
 
-const kafka = new Kafka({
-  clientId: 'chat-app',
-  brokers: ['127.0.0.1:9092']
-});
+export function createTopic(topic: string, partitions?: number, replicas?: number) {
+  return admin.connect().then(() => {
+    admin.createTopics({
+      topics: [{
+        topic: topic,
+        numPartitions: partitions ? partitions : 1,
+        replicationFactor: replicas ? replicas : 1,
+      }]
+    }).then(() => admin.disconnect())
+  })
+}
+```
 
-const producer = kafka.producer();
+After you have a cluster up and running, and a topic to store your data, you can 
+build a producer and consumer:
 
-export function getConnection(user: string){
+## Producer code
+
+```javascript title="src/producer.ts"
+import {Kafka} from "kafkajs"
+
+const redpanda = new Kafka({
+  brokers: ["localhost:9092"]
+})
+const producer = redpanda.producer()
+
+export function getConnection(user: string) {
   return producer.connect().then(() => {
     return (message: string) => {
       return producer.send({
-        topic: 'chat-room', // the topic created before
-        messages: [//we send the message and the user who sent it
-          {value: JSON.stringify({message, user})},
-        ],
+        topic: "chat-room",
+        messages: [{value: JSON.stringify({message, user})},],
       })
     }
   })
 }
 
-export function disconnect(){
+export function disconnect() {
   return producer.disconnect()
 }
 ```
-That’s it, a working producer, sending strings entered by the user. Keepin mind
-that you can send buffers, meaning you can send pretty much anything you want.
 
-## Consumer Setup
+You now have a working producer that sends strings entered by the user to the 
+`chat-room` topic. Messages are sent as JSON encoded strings here,
+but keep in mind that the producer only sends buffers, so you can encode the
+messages however you like.
 
-```javascript
-// src/consumer.ts
-import { v4 as uuidv4 } from 'uuid';
-import {Kafka} from 'kafkajs';
+## Consumer code
 
-const kafka = new Kafka({
-  clientId: 'chat-app',
-  brokers: ['127.0.0.1:9092']
-});
+```javascript title="src/consumer.ts"
+import {Kafka} from "kafkajs"
+import {v4 as uuidv4} from "uuid"
 
-const consumer = kafka.consumer({ groupId: uuidv4() }); // we need a unique groupId I'll explain down
+const redpanda = new Kafka({
+  brokers: ["localhost:9092"]
+})
+const consumer = redpanda.consumer({groupId: uuidv4()})
 
-export  function connect() {
+export function connect() {
   return consumer.connect().then(() =>
-    consumer.subscribe({topic: 'chat-room'}).then(() =>
+    consumer.subscribe({topic: "chat-room"}).then(() =>
       consumer.run({
         eachMessage: async ({topic, partition, message}) => {
-          const formattedValue = JSON.parse((message.value as Buffer).toString()); // everything comes as a buffer
-          console.log(`${formattedValue.user}: ${formattedValue.message}`)// print the message
+          const formattedValue = JSON.parse((message.value as Buffer).toString())
+          console.log(`${formattedValue.user}: ${formattedValue.message}`)
         },
       })
     )
-  );
+  )
 }
 
 export function disconnect() {
-  consumer.disconnect();
+  consumer.disconnect()
 }
 ```
-There you have it. This will get all produced messages and print them. You can
-have as many consumer groups as you want, but bear in mind that each group will
-get a message only once. That's why we have the uuid generated.
 
-## Putting everything together
+You now have a consumer that will read all messages from the `chat-room`
+topic and print them to the console. You can start as many consumer groups as
+you like, but bear in mind that each group will read a message only once, which is
+why the example is using a generated UUID for the group ID.
 
-```javascript
-//src/index.ts
-import readline from 'readline';
+The following example brings all the preceding examples together: 
 
-import * as Producer from './producer';
-import * as Consumer from './consumer';
+```javascript title="src/index.ts"
+import * as readline from "node:readline"
+import * as Admin from "./admin"
+import * as Producer from "./producer"
+import * as Consumer from "./consumer"
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
-});
+})
 
 function start() {
-  console.log('connecting...')
-  Consumer.connect().then(() => {
-    rl.question('enter user name \n', function (username) { // the username to print it along with the messages
-      Producer.getConnection(username).then((sendMessage) => {
-        console.log('connected, press Ctrl+C to exit')
-        rl.on('line', (input) => {
-          readline.moveCursor(process.stdout, 0,-1); // removing the input so you don't get duplicated items in terminal
-          sendMessage(input);
+  const topic = "chat-room"
+  console.log(`Creating topic: ${topic}`)
+  Admin.createTopic(topic).then(() => {
+    console.log("Connecting...")
+    Consumer.connect().then(() => {
+      rl.question("Enter user name: \n", function (username) {
+        Producer.getConnection(username).then((sendMessage) => {
+          console.log("Connected, press Ctrl+C to exit")
+          rl.on("line", (input) => {
+            readline.moveCursor(process.stdout, 0, -1)
+            sendMessage(input);
+          })
         })
       })
-    });
-  })
+    })
+  })  
 }
+start()
 
-start();
-// handling shut down
-
-process.on('SIGINT', process.exit);
-
-process.on('exit', () => {
+process.on("SIGINT", process.exit)
+process.on("exit", () => {
   Producer.disconnect();
   Consumer.disconnect();
   rl.close();
-});
+})
 ``` 
 
 ## Running
 
 ```bash
-tsc && node src/index.js
+tsc src/index.js && node src/index.js
 ```
-Run this as many times as you want clients. At least 2 so you can chat between
-2 terminals.
+
+Run this at least twice so that you can chat between two terminals, but you can
+run as many as you like.
 
 ## Wrapping up
 
-Now you have the basic building blocks to work with Redpanda. Try it yourself,
-there are endless use cases - what we built here was just the simplest of
-examples.
+Now you have the basic building blocks for working with Redpanda using Node.js.

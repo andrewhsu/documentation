@@ -214,6 +214,7 @@ module.exports = {
           label: "Kafka clients",
           id: "platform/development/kafka-clients",
         },
+        "platform/development/code-examples",
         "platform/development/guide-nodejs",
         "platform/development/consumer-offsets",
         "platform/development/idempotent-producers",
