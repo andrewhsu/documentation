@@ -39,9 +39,9 @@ A license key unlocks Redpanda Enterprise Edition features. To apply the license
 
 `rpk cluster license set` 
 
-Either provide a path to a file containing the license, or provide the license string inline. For example, run:
+Either provide a path to a file containing the license, or provide the license string inline. For example, assuming you use the default admin host/port of `0.0.0.0:9644`, run:
 
-`rpk cluster license set --path /home/organization/redpanda.license --api-urls 0.0.0.0:9645`
+`rpk cluster license set --path /home/organization/redpanda.license --api-urls 0.0.0.0:9644`
 
 or 
 
@@ -53,6 +53,6 @@ If neither the path or the license string are are provided, `rpk` looks for the 
 
 To check the status of your current license, run:
 
-`rpk cluster license info --api-urls 0.0.0.0:9645`
+`rpk cluster license info --api-urls 0.0.0.0:9644`
 
 Redpanda sends warning messages in the cluster logs if you enable enterprise features without a valid license key.
