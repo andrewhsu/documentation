@@ -84,7 +84,7 @@ const AdmonitionConfigs = {
       <Translate
         id="theme.admonition.danger"
         description="The default label used for the Danger admonition (:::danger)">
-        danger
+        warning
       </Translate>
     ),
   },
