@@ -14,7 +14,9 @@ import TabItem from '@theme/TabItem';
 This feature requires an [Enterprise license](../../introduction/licenses). To upgrade, contact [Redpanda sales](https://redpanda.com/try-redpanda?section=enterprise-cloud).
 :::
 
-Tiered Storage helps to lower storage costs by offloading log segments to cloud storage. You can specify the amount of local storage you want to retain in local storage. You don't need to specify which log segments you want to move because Redpanda moves them automatically based on cluster-level configuration properties. Redpanda Tiered Storage works behind the scenes to index where data is offloaded, so it can retrieve the data when you need it.
+Tiered Storage helps to lower storage costs by offloading log segments to cloud storage. You can specify the amount of local storage you want to retain in local storage. You don't need to specify which log segments you want to move because Redpanda moves them automatically based on cluster-level configuration properties. Redpanda Tiered Storage indexes where data is offloaded, so it can retrieve the data when you need it.
+
+Redpanda supports Tiered Storage with Amazon S3 and Google Cloud Storage. 
 
 :::caution
 Do not use Tiered Storage with [data transforms](../../labs/data-transform), which is a lab feature in technical preview. Lab features are not supported for production usage.
@@ -33,27 +35,38 @@ Before you use Tiered Storage:
 
 ### Configure cloud storage
 
-Tiered Storage is supported for Amazon S3, Google Cloud Storage, and Azure Blob Storage.
+Configure access to cloud storage with either an [IAM role](../../security/iam-roles) attached to the instance or with access keys.
 
 <Tabs>
     <TabItem value="S3" label="Amazon S3" default>
 
 
-To create a cloud storage bucket and configure Redpanda:
+To configure access to an Amazon S3 bucket with an IAM role: 
 
-1. Specify the expiration rules for the files that are based on the `rp-type` file tags. 
-2. Use [IAM roles](../../security/iam-roles) to create a user who can access S3.
-3. Grant the user the following permissions to read and create objects on the bucket to be used with the cluster (or on all buckets): `GetObject`, `DeleteObject`, `PutObject`.
-4. Copy the access key and secret key for the `cloud_storage_access_key` and `cloud_storage_secret_key` cluster properties.
-5. Edit the the following required properties with the `rpk cluster config edit` command:
+1. Configure an [IAM role](../../security/iam-roles). 
 
-```properties
-cloud_storage_enabled: true
-cloud_storage_access_key: ***
-cloud_storage_secret_key: ***
-cloud_storage_region: eu-north-1
-cloud_storage_bucket: pandabucket
-```
+2. Run the `rpk cluster config edit` command, then edit the following required properties:
+
+   ```properties
+   cloud_storage_enabled: true
+   cloud_storage_credentials_source: aws_instance_metadata
+   cloud_storage_region: eu-north-1
+   cloud_storage_bucket: pandabucket
+   ```
+
+To configure access to Amazon S3 with access keys instead of IAM roles:
+
+1. Grant a user the following permissions to read and create objects on the bucket to be used with the cluster (or on all buckets): `GetObject`, `DeleteObject`, `PutObject`.
+2. Copy the access key and secret key for the `cloud_storage_access_key` and `cloud_storage_secret_key` cluster properties.
+3. Run the `rpk cluster config edit` command, then edit the following required properties:
+
+   ```properties
+   cloud_storage_enabled: true
+   cloud_storage_access_key: ***
+   cloud_storage_secret_key: ***
+   cloud_storage_region: eu-north-1
+   cloud_storage_bucket: pandabucket
+   ```
 
 For additional properties, see [Tiered Storage configuration properties](../tiered-storage#tiered-storage-configuration-properties).
 
@@ -61,29 +74,37 @@ For additional properties, see [Tiered Storage configuration properties](../tier
       <TabItem value="GCS" label="Google Cloud Storage" default>
 
 
-To create a cloud storage bucket and configure Redpanda:
+To configure access to Google Cloud Storage with an IAM role: 
+
+1. Configure an [IAM role](../../security/iam-roles). 
+
+2. Run the `rpk cluster config edit` command, then edit the following required properties:
+
+   ```properties
+   cloud_storage_enabled: true
+   cloud_storage_credentials_source: gcp_instance_metadata
+   cloud_storage_region: eu-north-1
+   cloud_storage_bucket: pandabucket
+   ```
+
+To instead configure access to Google Cloud Storage with access keys:
 
 1. Choose a uniform access control when you create the bucket. 
-2. Use a Google managed encryption key. 
+2. Use a Google-managed encryption key. 
 3. Set a [default project](https://cloud.google.com/storage/docs/migrating#defaultproj). 
 4. Create a service user with [HMAC keys](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) and copy the access key and secret key for the `cloud_storage_access_key` and `cloud_storage_secret_key` cluster properties.
-5. Edit the following required properties with the `rpk cluster config edit` command:
+5. Run the `rpk cluster config edit` command, then edit the following required properties:
 
-```properties
-cloud_storage_access_key: ***
-cloud_storage_api_endpoint: storage.googleapis.com
-cloud_storage_bucket: pandabucket
-cloud_storage_enabled: true
-cloud_storage_region: eu-north-1
-cloud_storage_secret_key: ***
-```
+   ```properties
+   cloud_storage_access_key: ***
+   cloud_storage_api_endpoint: storage.googleapis.com
+   cloud_storage_bucket: pandabucket
+   cloud_storage_enabled: true
+   cloud_storage_region: eu-north-1
+   cloud_storage_secret_key: ***
+   ```
 
 For additional properties, see [Tiered Storage configuration properties](../tiered-storage#tiered-storage-configuration-properties).
-
-  </TabItem>
-      <TabItem value="Azure" label="Azure Blob Storage" default>
-
-  To
 
   </TabItem>
     </Tabs>
@@ -113,10 +134,6 @@ Tiered Storage also uses the following topic configuration flags:
 | `redpanda.remote.write` | Uploads data from Redpanda to cloud storage. Overrides the cluster-level `cloud_storage_enable_remote_write` configuration for the topic. |
 | `redpanda.remote.read` | Fetches data from cloud storage to Redpanda. Overrides the cluster-level `cloud_storage_enable_remote_read` configuration for the topic. |
 | `redpanda.remote.recovery` | Recovers or reproduces a topic from cloud storage. Use this flag during topic creation. It does not apply to existing topics.  |
-
-:::note
-In Redpanda Cloud, you must explicitly switch on Tiered Storage for specific topics or globally for the cluster.
-:::
 
 Topic configuration flags override any cluster-level configuration. For example, on new topics, if `cloud_storage_enable_remote_write` is set to `true`, you can set `redpanda.remote.write` to `false` to turn it off for a particular topic. Or, if you have Tiered Storage turned off for the cluster, you can enable it for individual topics with the topic flags. When cluster-level properties are changed, the changes apply only to new topics, not existing topics.
 
@@ -182,7 +199,7 @@ You can use topic-level properties to control retention of topic data in local s
 
 With Tiered Storage enabled, data expires from local storage following `retention.local.target.ms` or `retention.local.target.bytes`. For example, if `retention.local.target.bytes` is set to 10GiB, then the partition has 10GiB/number_of_partitions. (These are equivalent to `retention.ms` and `retention.bytes` without Tiered Storage.)
 
-When set, Redpanda keeps actively-used and sequential (next segment) data in local cache and targets to maintain this age of data in local storage. It purges data based on actual available local volume space, without forcing disk full situations when there is data skew. A topic does not have guaranteed local storage, but you can specify hints to stash a range of data in local storage.
+When set, Redpanda keeps actively-used and sequential (next segment) data in local cache and targets to maintain this age of data in local storage. It purges data based on actual available local volume space, without forcing disk full situations when there is data skew. 
 
 At topic creation with Tiered Storage enabled:
 - If `retention.ms` or `retention.bytes` is set, it initializes the `remote_retention_` properties in `topic_properties`.
@@ -203,7 +220,11 @@ Remote write is the process that constantly uploads log segments to cloud storag
 
 To ensure all data is uploaded, you must enable remote write before any data is produced to the topic. If remote write is not enabled, data may be deleted due to retention settings. 
 
-To enable Tiered Storage, use remote write in conjunction with remote read. If you only enable remote write on a topic, you have a simple backup that you still can run recovery on.
+To enable Tiered Storage, use remote write in conjunction with remote read. 
+
+:::note
+If you only enable remote write on a topic, you have a simple backup that you can use for recovery. See [Data Archiving](../data-archiving).
+:::
 
 To create a topic with remote write enabled:
 
