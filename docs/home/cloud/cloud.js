@@ -1,6 +1,8 @@
 import React from 'react';
 import clsx from 'clsx';
 import styles from './cloud.module.css';
+import Feature from '../../../src/components/Feature';
+import Grid from '../../../src/components/Grid';
 
 const FeatureList = [
   {
@@ -65,47 +67,14 @@ const FeatureList = [
   },
 ];
 
-function Feature({image, title, description, url}) {
-  return (
-    <div className={clsx('col col--4')}>
-      <div className={styles.padding}>
-      <div className={styles.border}>
-          <div className="text--center">
-            <a href={url}>
-            <img src={image} className={styles.featureSvg} alt={title} />
-            </a>
-          </div>
-        <div className={styles.box} >
-          <a href={url}>
-          <span className={styles.body_title}>{title}</span>
-          </a>
-          <div className={styles.body_text}>
-            <p>{description}</p>
-
-          </div>
-          <div className={styles.learn}>
-              <a href={url}><p>Learn more -> </p></a>
-            </div>
-
-        </div>
-      </div>
-    </div>
-    </div>
-  );
-}
-
 export default function HomepageFeatures() {
   return (
     <section className={styles.features}>
-      <div class={clsx('border border-primary')}>
-      <div className="container">
-        <div className="row">
-            {FeatureList.map((props, idx) => (
-              <Feature key={idx} {...props} />
-            ))}
-          </div>
-        </div>
-        </div>
+      <Grid gap="2rem" minWidth="250px">
+        {FeatureList.map((props, idx) => (
+          <Feature key={idx} {...props} />
+        ))}
+      </Grid>
     </section>
   );
 }

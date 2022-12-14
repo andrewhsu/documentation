@@ -1,16 +1,33 @@
 ---
-title: Node maintenance mode
+title: Node Maintenance Mode
 ---
 
-Node maintenance mode enables you to bring a Redpanda node into a state where you can safely perform operations like an upgrade with reduced risk of data loss or downtime.
+<head>
+    <meta name="title" content="Node Maintenance Mode | Redpanda Docs"/>
+    <meta name="description" content="Place a node into maintenance mode to safely perform operations, such as hardware maintenance, system maintenance, or a rolling upgrade."/>
+</head>
 
-When a node is placed in maintenance mode, it relinquishes leadership of any partitions, drains that leadership to other nodes in the cluster, and ensures that the node cannot gain partition leadership until maintenance mode is disabled.
+Node maintenance mode enables you to take a Redpanda node offline temporarily while minimizing disruption to client operations. When a node is in maintenance mode, you can safely perform operations that require the Redpanda process to be temporarily stopped; for example, performing hardware or system maintenance, or performing a rolling upgrade.
 
-Note that maintenance mode doesn’t move any partitions out of the node, and Redpanda will continue to replicate follower partition data to nodes in maintenance mode. If the node becomes unreachable, then the cluster could accumulate under-replicated partitions until the node becomes available or it is decommissioned.
+:::caution
+A node cannot be decommissioned while it is in maintenance mode. Take the node out of maintenance mode first by running `rpk cluster maintenance disable <node-id>`.
+:::
 
-## Using maintenance mode
+When a node is placed in maintenance mode, it reassigns partition leadership to other nodes in the cluster. The node is not eligible for partition leadership again until it is taken out of maintenance mode. Note that maintenance mode only transfers leadership; it does not move any partitions to other nodes in the cluster. 
 
-Before placing a node in maintenance mode, ensure that you have replicas of partitions on other nodes in the cluster. Alternatively, you can manually reassign partitions to other nodes. You may also want to temporarily disable or ignore alerts related to under-replicated partitions.
+If a node hosts a partition with a replica count of 1, you have three options:
+
+* Manually reassign the partition to another node by changing its replica set.
+* Increase the number of replicas.
+* Do nothing, but be aware that the partition will not be available while the `redpanda` process is shut down temporarily.
+
+The amount of time it takes to drain a node and reassign leadership depends on the number of partitions and how healthy the cluster is. For healthy clusters, draining leadership should take less than a minute. If the cluster is unhealthy (for example, a follower is not in sync with the leader), then draining the node can take even longer. Note that the draining process won’t start until the cluster is healthy.
+
+When a node is in maintenance mode, Redpanda continues to replicate updates to that node. When the node is taken offline, partitions with replicas on the node could become out of sync until the node is brought back online. Once the node is available again, data is copied to under-replicated replicas on the node until all affected partitions are in sync with the leader.
+
+## Placing a node in maintenance mode
+
+Before placing a node in maintenance mode, you may want to temporarily disable or ignore alerts related to under-replicated partitions. To prevent under-replicated partitions altogether, you can move all partitions to other nodes.
 
 To place a node into maintenance mode:
 
@@ -18,7 +35,7 @@ To place a node into maintenance mode:
 rpk cluster maintenance enable <node-id> --wait
 ```
 
-The `--wait` option ensures that `rpk` waits until leadership draining is complete before responding.
+The `--wait` option ensures that `rpk` waits until leadership is drained from the node before responding.
 
 To remove a node from maintenance mode (and thus enable the node to start taking leadership of partitions):
 
