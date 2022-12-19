@@ -14,7 +14,7 @@ import TabItem from '@theme/TabItem';
 This feature requires an [Enterprise license](../../introduction/licenses). To upgrade, contact [Redpanda sales](https://redpanda.com/try-redpanda?section=enterprise-cloud).
 :::
 
-Tiered Storage helps to lower storage costs by offloading log segments to cloud storage. You can specify the amount of storage you want to retain in local storage. You don't need to specify which log segments you want to move because Redpanda moves them automatically based on cluster-level configuration properties. Tiered Storage indexes where data is offloaded, so it can retrieve the data when you need it.
+Tiered Storage helps to lower storage costs by offloading log segments to cloud storage. You can specify the amount of storage you want to retain in local storage. You don't need to specify which log segments you want to move, because Redpanda moves them automatically based on cluster-level configuration properties. Tiered Storage indexes where data is offloaded, so it can retrieve the data when you need it.
 
 Redpanda supports Tiered Storage with Amazon S3, Google Cloud Storage (GCS), and Microsoft Azure Blob Storage (ABS). 
 
@@ -28,10 +28,10 @@ The following image illustrates the Tiered Storage architecture: remote write up
 
 ## Set up
 
-Before you use Tiered Storage:
-- Configure cloud storage for the cluster.
-- Enable Tiered Storage, either on a cluster or on a topic.
-- Set retention limits on cloud storage.
+To use Tiered Storage:
+- [Configure cloud storage](../../data-management/tiered-storage/#configure-cloud-storage).
+- Enable Tiered Storage, either [for a cluster](../../data-management/tiered-storage/#enable-tiered-storage-for-a-cluster) or [for a topic](../../data-management/tiered-storage/#enable-tiered-storage-for-a-topic).
+- [Set retention limits](../../data-management/tiered-storage/#set-retention-limits).
 
 ### Configure cloud storage
 
@@ -87,7 +87,7 @@ To configure access to Google Cloud Storage with an IAM role:
    cloud_storage_bucket: pandabucket
    ```
 
-To instead configure access to Google Cloud Storage with access keys:
+To configure access to Google Cloud Storage with access keys instead of IAM roles:
 
 1. Choose a uniform access control when you create the bucket. 
 2. Use a Google-managed encryption key. 
@@ -112,9 +112,11 @@ For additional properties, see [Tiered Storage configuration properties](../tier
 
 To configure access to an Azure Blob Storage container with Active Directory authorization: 
 
+Policies are stored in Active Directory that map to ABS. This requires providing an OAuth token. The user provides a public identifier and a secret, which Redpanda exchanges for an OAuth token. This token is then appended to all subsequent requests to ABS.
+
 xxx
 
-To instead configure access to Azure Blob Storage with a shared key:
+Alternatively, to configure access to Azure Blob Storage with shared key credentials:
 
 xxx
 
@@ -261,17 +263,17 @@ Starting in release 22.3, when you delete a topic in Redpanda, the data is also 
 
 You can configure Redpanda to start a remote write periodically. This is useful if the ingestion rate is low and the segments are kept open for long periods of time. You specify a number of seconds for the timeout, and if that time has passed since the previous write and the partition has new data, Redpanda starts a new write. This limits data loss in the event of catastrophic failure and adds a guarantee that you only lose the specified number of seconds of data.
 
-Setting idle timeout to a very short interval can result in the creation of a lot of small files, which can affect throughput. If you decide to set a value for idle timeout, it is recommended you start out with 600 seconds, which prevents the creation of so many small files that throughput is affected when you recover the files.
+Setting idle timeout to a very short interval can create a lot of small files, which can affect throughput. If you decide to set a value for idle timeout, start out with 600 seconds, which prevents the creation of so many small files that throughput is affected when you recover the files.
 
-Use the `cloud_storage_segment_max_upload_interval_sec` property to set the number of seconds for idle timeout. If this property is empty, Redpanda uploads metadata to the cloud storage, but the segment is not uploaded until it reaches the `segment.bytes` size. Edit the property value using the `rpk cluster config edit` command. By default, the property is empty.
+Use the `cloud_storage_segment_max_upload_interval_sec` property to set the number of seconds for idle timeout. If this property is empty, Redpanda uploads metadata to cloud storage, but the segment is not uploaded until it reaches the `segment.bytes` size. Edit the property value using the `rpk cluster config edit` command. By default, the property is empty.
 
 ### Reconciliation 
 
-Reconciliation is a Redpanda process that runs periodically on every node. It monitors partitions and decides which partitions are uploaded on each Redpanda node to guarantee that the data is uploaded only once. It also balances the workload evenly between the nodes.
+Reconciliation is a Redpanda process that runs periodically on every node. It monitors partitions and decides which partitions are uploaded on each Redpanda node to guarantee that data is uploaded only once. It also balances the workload evenly between nodes.
 
 When leadership rebalancing occurs, the reconciliation process might stop uploads on one node and start them on another node. 
 
-The reconciliation process is configured with the following property. Edit the property with the `rpk cluster config edit` command:
+The reconciliation process is configured with the `cloud_storage_reconciliation_interval_ms` property. Edit the property with the `rpk cluster config edit` command.
 
 | Property      | Description |
 | ----------- | ----------- |
@@ -279,7 +281,7 @@ The reconciliation process is configured with the following property. Edit the p
 
 ### Upload controller
 
-Remote write uses a proportional derivative (PD) controller to minimize the backlog size for the write. The backlog consists of the data that has not been uploaded to cloud storage but must be uploaded eventually. 
+Remote write uses a proportional derivative (PD) controller to minimize the backlog size for the write. The backlog consists of data that has not been uploaded to cloud storage but must be uploaded eventually. 
 
 The upload controller prevents Redpanda from running out of disk space. If `remote.write` is set to `true`, Redpanda cannot evict log segments that have not been uploaded to cloud storage. If the remote write process cannot keep up with the amount of data that needs to be uploaded to cloud storage, the upload controller increases priority for the upload process. The upload controller measures the size of the upload periodically and tunes the priority of the remote write process. 
 
@@ -287,9 +289,9 @@ The upload controller prevents Redpanda from running out of disk space. If `remo
 
 Remote read fetches data from cloud storage using the Kafka API. Use remote read in conjunction with remote write to enable Tiered Storage. If you use remote read without remote write, there is nothing for Redpanda to read.
 
-Normally, when data is evicted locally, it is no longer available. If the consumer starts consuming the partition from the beginning, the first offset is the smallest offset available locally. However, if Tiered Storage is enabled with the `redpanda.remote.read` and `redpanda.remote.write` flags, the data is always uploaded to remote storage before it is deleted. This guarantees that the data is always available either locally or remotely.
+Normally, when data is evicted locally, it is no longer available. If the consumer starts consuming the partition from the beginning, the first offset is the smallest offset available locally. However, if Tiered Storage is enabled with the `redpanda.remote.read` and `redpanda.remote.write` flags, the data is always uploaded to remote storage before it's deleted. This guarantees that the data is always available either locally or remotely.
 
-When data is available remotely and Tiered Storage is enabled, the client can start consuming data from offset 0 even if the data is no longer stored locally. 
+When data is available remotely and Tiered Storage is enabled, the client can start consuming data from offset 0, even if the data is no longer stored locally. 
 
 To create a topic with remote read enabled:
 
@@ -307,9 +309,7 @@ rpk topic alter-config <topic_name> --set redpanda.remote.read=true
 
 When the Kafka client fetches an offset range that isn’t available locally in the Redpanda data directory, Redpanda downloads remote segments from cloud storage. These downloaded segments are stored in the cloud storage cache directory. The cache directory is created in the Redpanda `data` directory by default, but it can be placed anywhere in the system. For example, you might want to put the cache directory to a dedicated drive with cheaper storage. 
 
-If you don’t specify a cache location in the `redpanda.yaml` file, the cache directory is created here:
-
-`<redpanda_data_directory>/cloud_storage_cache`. 
+If you don’t specify a cache location in the `redpanda.yaml` file, the cache directory is created in `<redpanda_data_directory>/cloud_storage_cache`. 
 
 Use the `cloud_storage_cache_directory` property in the `redpanda.yaml` file of each node to specify a different location for the cache directory. You must specify the full path. 
 
@@ -320,7 +320,7 @@ Use the following cluster-level properties to set the maximum cache size and cac
 | Property      | Description |
 | ----------- | ----------- |
 | `cloud_storage_cache_size` | Maximum size of the disk cache used by Tiered Storage. Default is 20 GiB. |
-| `cloud_storage_cache_check_interval` | The time, in milliseconds, between cache checks. The size of the cache can grow quickly, so it’s important to have a small interval between checks, but if the checks are too frequent, they consume a lot of resources. Default is 30000 ms. |
+| `cloud_storage_cache_check_interval` | The time, in milliseconds, between cache checks. The size of the cache can grow quickly, so it’s important to have a small interval between checks. However, if the checks are too frequent, they consume a lot of resources. Default is 30000 ms. |
 
 ## Remote recovery 
 
@@ -332,7 +332,7 @@ To create a new topic using remote recovery:
 rpk topic create <topic_name> -c redpanda.remote.recovery=true
 ```
 
-To create a new topic using remote recovery and enable Tiered Storage on the new topic by adding the `redpanda.remote.write` and `redpanda.remote.read` flags:
+To create a new topic using remote recovery and enable Tiered Storage on the new topic with the `redpanda.remote.write` and `redpanda.remote.read` flags:
 
 ```bash
 rpk topic create <topic_name> -c redpanda.remote.recovery=true -c redpanda.remote.write=true -c redpanda.remote.read=true
@@ -340,9 +340,7 @@ rpk topic create <topic_name> -c redpanda.remote.recovery=true -c redpanda.remot
 
 ## Retries and backoff 
 
-If the cloud provider replies with an error message that the server is busy, Redpanda retries the request. Redpanda always uses exponential backoff with cloud connections.
-
-Redpanda retries the request if it receives any of the following errors:
+If the cloud provider replies with an error message that the server is busy, Redpanda retries the request. Redpanda always uses exponential backoff with cloud connections. Redpanda retries the request if it receives any of the following errors:
 
 * Connection refused
 * Connection reset by peer
@@ -363,11 +361,11 @@ Redpanda uses the following properties to configure transport. Edit them with th
 
 | Property      | Description |
 | ----------- | ----------- |
-| `cloud_storage_max_connections` | The maximum number of connections to cloud storage on a node per CPU. Remote read and remote write share the same pool of connections. This means that if a connection is being used to upload a segment, it cannot be used to download another segment. If this value is too small, some workloads might starve for connections, which results in delayed uploads and downloads. If this value is too large, Redpanda tries to upload a lot of files at the same time and might overwhelm the system. Default is 20. |
+| `cloud_storage_max_connections` | The maximum number of connections to cloud storage on a node for each CPU. Remote read and remote write share the same pool of connections. This means that if a connection is used to upload a segment, it cannot be used to download another segment. If this value is too small, some workloads might starve for connections, which results in delayed uploads and downloads. If this value is too large, Redpanda tries to upload a lot of files at the same time and might overwhelm the system. Default is 20. |
 | `cloud_storage_segment_upload_timeout_ms` | Timeout for segment upload. Redpanda retries the upload after the timeout. Default is 30000 ms. |
 | `cloud_storage_manifest_upload_timeout_ms` | Timeout for manifest upload. Redpanda retries the upload after the timeout. Default is 10000 ms. |
-| `cloud_storage_max_connection_idle_time_ms` | The maximum idle time for persistent HTTP connections. Differs depending on the cloud provider. Default is 5000 ms, which is sufficient for most providers. |
-| `cloud_storage_segment_max_upload_interval_sec` | Sets the number of seconds for idle timeout. If this property is empty, Redpanda uploads metadata to the cloud storage, but the segment is not uploaded until it reaches the `segment.bytes` size. By default, the property is empty. |
+| `cloud_storage_max_connection_idle_time_ms` | The maximum idle time for persistent HTTP connections. This differs depending on the cloud provider. Default is 5000 ms, which is sufficient for most providers. |
+| `cloud_storage_segment_max_upload_interval_sec` | The number of seconds for idle timeout. If this property is empty, Redpanda uploads metadata to the cloud storage, but the segment is not uploaded until it reaches the `segment.bytes` size. By default, the property is empty. |
 | `cloud_storage_trust_file` | The public certificate used to validate the TLS connection to cloud storage. If this is empty, Redpanda uses your operating system's CA cert pool. |
 
 ## Tiered Storage configuration properties
@@ -396,7 +394,7 @@ You may want to configure the following properties:
 
 | Property      | Description |
 | ----------- | ----------- |
-| `cloud_storage_max_connections` | The maximum number of connections to cloud storage on a node per CPU. Remote read and remote write share the same pool of connections. This means that if a connection is being used to upload a segment, it cannot be used to download another segment. If this value is too small, some workloads might starve for connections, which results in delayed uploads and downloads. If this value is too large, Redpanda tries to upload a lot of files at the same time and might overwhelm the system. Default is 20. |
+| `cloud_storage_max_connections` | The maximum number of connections to cloud storage on a node for each CPU. Remote read and remote write share the same pool of connections. This means that if a connection is used to upload a segment, it cannot be used to download another segment. If this value is too small, some workloads might starve for connections, which results in delayed uploads and downloads. If this value is too large, Redpanda tries to upload a lot of files at the same time and might overwhelm the system. Default is 20. |
 | `cloud_storage_initial_backoff_ms` | The time, in milliseconds, used as an initial backoff interval in the exponential backoff algorithm to handle an error. Default is 100 ms. |
 | `cloud_storage_segment_upload_timeout_ms` | Timeout for segment upload. Redpanda retries the upload after the timeout. Default is 30000 ms. |
 | `cloud_storage_manifest_upload_timeout_ms` | Timeout for manifest upload. Redpanda retries the upload after the timeout. Default is 10000 ms. |
@@ -413,7 +411,7 @@ Under normal circumstances, you should not need to configure the following prope
 | `cloud_storage_upload_ctrl_d_coeff` | The derivative coefficient for the upload controller. Default is 0. |
 | `cloud_storage_upload_ctrl_min_shares` | The minimum number of I/O and CPU shares that the remote write process can use. Default is 100. |
 | `cloud_storage_upload_ctrl_max_shares` | The maximum number of I/O and CPU shares that the remote write process can use. Default is 1000. |
-| `cloud_storage_reconciliation_interval_ms` | Sets the interval, in milliseconds, used to reconcile partitions that need to be uploaded. A long reconciliation interval can result in a delayed reaction to topic creation, topic deletion, or leadership rebalancing events. A short reconciliation interval guarantees that new partitions are picked up quickly, but the process uses more resources. Default is 10000 ms. |
+| `cloud_storage_reconciliation_interval_ms` | The interval, in milliseconds, to reconcile partitions that need to be uploaded. A long reconciliation interval can result in a delayed reaction to topic creation, topic deletion, or leadership rebalancing events. A short reconciliation interval guarantees that new partitions are picked up quickly, but the process uses more resources. Default is 10000 ms. |
 | `cloud_storage_disable_tls` | Disables TLS encryption. You can set this to true if TLS termination is done by the proxy, such as HAProxy. Default is false.  |
 | `cloud_storage_api_endpoint_port` | Overrides the default API endpoint port. Default is 443. |
 | `cloud_storage_trust_file` | The public certificate used to validate the TLS connection to cloud storage. If this is empty, Redpanda uses your operating system's CA cert pool. |
@@ -422,4 +420,4 @@ Under normal circumstances, you should not need to configure the following prope
 
 ## Suggested reading
 
-- [How to build Shadow Indexing, the subsystem powering Tiered Storage](https://redpanda.com/blog/tiered-storage-architecture-shadow-indexing-deep-dive/)
+- [How we built Shadow Indexing, the subsystem powering Tiered Storage](https://redpanda.com/blog/tiered-storage-architecture-shadow-indexing-deep-dive/)
