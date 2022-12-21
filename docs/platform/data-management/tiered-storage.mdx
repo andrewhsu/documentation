@@ -29,9 +29,9 @@ The following image illustrates the Tiered Storage architecture: remote write up
 ## Set up
 
 To use Tiered Storage:
-- [Configure cloud storage](../../data-management/tiered-storage/#configure-cloud-storage).
-- Enable Tiered Storage, either [for a cluster](../../data-management/tiered-storage/#enable-tiered-storage-for-a-cluster) or [for a topic](../../data-management/tiered-storage/#enable-tiered-storage-for-a-topic).
-- [Set retention limits](../../data-management/tiered-storage/#set-retention-limits).
+1. [Configure cloud storage](../../data-management/tiered-storage/#configure-cloud-storage).
+2. Enable Tiered Storage, either [for a cluster](../../data-management/tiered-storage/#enable-tiered-storage-for-a-cluster) or [for a topic](../../data-management/tiered-storage/#enable-tiered-storage-for-a-topic).
+3. [Set retention limits](../../data-management/tiered-storage/#set-retention-limits).
 
 ### Configure cloud storage
 
@@ -110,15 +110,33 @@ For additional properties, see [Tiered Storage configuration properties](../tier
   </TabItem>
     <TabItem value="Azure" label="Azure Blob Storage" default>
 
-To configure access to an Azure Blob Storage container with Active Directory authorization: 
+To configure access to an Azure Blob Storage container with an IAM role: 
 
-Policies are stored in Active Directory that map to ABS. This requires providing an OAuth token. The user provides a public identifier and a secret, which Redpanda exchanges for an OAuth token. This token is then appended to all subsequent requests to ABS.
+1. Configure an [IAM role](../../security/iam-roles). 
 
-xxx
+2. Run the `rpk cluster config edit` command, then edit the following required properties:
 
-Alternatively, to configure access to Azure Blob Storage with shared key credentials:
+   ```properties
+   cloud_storage_enabled: true
+   cloud_storage_azure_storage_account: azure_account_name
+   cloud_storage_region: eu-north-1
+   cloud_storage_azure_container: pandacontainer
+   ```
 
-xxx
+To configure access to Azure Blob Storage with shared keys instead of IAM roles:
+
+1. Grant a user the following permissions to read and create block blobs on the container to be used with the cluster (or on all containers): `Get Blob`, `Delete Blob`, `Put Blob`.
+2. For shared key authorization, copy the `cloud_storage_azure_shared_key` cluster property. For the client ID and secret for Active Directory authorization, copy `cloud_storage_azure_client_id` and `cloud_storage_azure_client_secret`.
+3. Run the `rpk cluster config edit` command, then edit the following required properties:
+
+   ```properties
+   cloud_storage_enabled: true
+   cloud_storage_azure_shared_key: ***
+   cloud_storage_azure_client_id: ***
+   cloud_storage_azure_client_secret: ***
+   cloud_storage_region: eu-north-1
+   cloud_storage_azure_container: pandacontainer
+   ```
 
 For additional properties, see [Tiered Storage configuration properties](../tiered-storage#tiered-storage-configuration-properties).
 
@@ -395,7 +413,7 @@ You may want to configure the following properties:
 | Property      | Description |
 | ----------- | ----------- |
 | `cloud_storage_max_connections` | The maximum number of connections to cloud storage on a node for each CPU. Remote read and remote write share the same pool of connections. This means that if a connection is used to upload a segment, it cannot be used to download another segment. If this value is too small, some workloads might starve for connections, which results in delayed uploads and downloads. If this value is too large, Redpanda tries to upload a lot of files at the same time and might overwhelm the system. Default is 20. |
-| `cloud_storage_initial_backoff_ms` | The time, in milliseconds, used as an initial backoff interval in the exponential backoff algorithm to handle an error. Default is 100 ms. |
+| `cloud_storage_initial_backoff_ms` | The time, in milliseconds, for an initial backoff interval in the exponential backoff algorithm to handle an error. Default is 100 ms. |
 | `cloud_storage_segment_upload_timeout_ms` | Timeout for segment upload. Redpanda retries the upload after the timeout. Default is 30000 ms. |
 | `cloud_storage_manifest_upload_timeout_ms` | Timeout for manifest upload. Redpanda retries the upload after the timeout. Default is 10000 ms. |
 | `cloud_storage_max_connection_idle_time_ms` | The maximum idle time for persistent HTTP connections. Differs depending on the cloud provider. Default is 5000 ms, which is sufficient for most providers. |
