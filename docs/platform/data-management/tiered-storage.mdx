@@ -30,18 +30,17 @@ The following image illustrates the Tiered Storage architecture: remote write up
 
 To use Tiered Storage:
 1. [Configure cloud storage](../../data-management/tiered-storage/#configure-cloud-storage).
-2. Enable Tiered Storage, either [for a cluster](../../data-management/tiered-storage/#enable-tiered-storage-for-a-cluster) or [for a topic](../../data-management/tiered-storage/#enable-tiered-storage-for-a-topic).
+2. [Enable Tiered Storage for a cluster](../../data-management/tiered-storage/#enable-tiered-storage-for-a-cluster), or [enable Tiered Storage for a topic](../../data-management/tiered-storage/#enable-tiered-storage-for-a-topic).
 3. [Set retention limits](../../data-management/tiered-storage/#set-retention-limits).
 
 ### Configure cloud storage
 
-Configure access to cloud storage with either an [IAM role](../../security/iam-roles) attached to the instance or with access keys.
-
 <Tabs>
     <TabItem value="S3" label="Amazon S3" default>
 
+Configure access to Amazon S3 with either an IAM role attached to the instance or with access keys.
 
-To configure access to an Amazon S3 bucket with an IAM role: 
+To configure access to an S3 bucket with an IAM role: 
 
 1. Configure an [IAM role](../../security/iam-roles). 
 
@@ -49,12 +48,12 @@ To configure access to an Amazon S3 bucket with an IAM role:
 
    ```properties
    cloud_storage_enabled: true
-   cloud_storage_credentials_source: aws_instance_metadata
-   cloud_storage_region: eu-north-1
-   cloud_storage_bucket: pandabucket
+   cloud_storage_credentials_source: <aws_instance_metadata>
+   cloud_storage_region: <eu-north-1>
+   cloud_storage_bucket: <redpanda_bucket>
    ```
 
-To configure access to Amazon S3 with access keys instead of IAM roles:
+To configure access to an S3 bucket with access keys instead of an IAM role:
 
 1. Grant a user the following permissions to read and create objects on the bucket to be used with the cluster (or on all buckets): `GetObject`, `DeleteObject`, `PutObject`.
 2. Copy the access key and secret key for the `cloud_storage_access_key` and `cloud_storage_secret_key` cluster properties.
@@ -64,8 +63,8 @@ To configure access to Amazon S3 with access keys instead of IAM roles:
    cloud_storage_enabled: true
    cloud_storage_access_key: ***
    cloud_storage_secret_key: ***
-   cloud_storage_region: eu-north-1
-   cloud_storage_bucket: pandabucket
+   cloud_storage_region: <eu-north-1>
+   cloud_storage_bucket: <redpanda_bucket>
    ```
 
 For additional properties, see [Tiered Storage configuration properties](../tiered-storage#tiered-storage-configuration-properties).
@@ -73,6 +72,7 @@ For additional properties, see [Tiered Storage configuration properties](../tier
   </TabItem>
       <TabItem value="GCS" label="Google Cloud Storage" default>
 
+Configure access to Google Cloud Storage with either an IAM role attached to the instance or with access keys.
 
 To configure access to Google Cloud Storage with an IAM role: 
 
@@ -82,12 +82,12 @@ To configure access to Google Cloud Storage with an IAM role:
 
    ```properties
    cloud_storage_enabled: true
-   cloud_storage_credentials_source: gcp_instance_metadata
-   cloud_storage_region: eu-north-1
-   cloud_storage_bucket: pandabucket
+   cloud_storage_credentials_source: <gcp_instance_metadata>
+   cloud_storage_region: <eu-north-1>
+   cloud_storage_bucket: <redpanda_bucket>
    ```
 
-To configure access to Google Cloud Storage with access keys instead of IAM roles:
+To configure access to Google Cloud Storage with access keys instead of an IAM role:
 
 1. Choose a uniform access control when you create the bucket. 
 2. Use a Google-managed encryption key. 
@@ -98,9 +98,9 @@ To configure access to Google Cloud Storage with access keys instead of IAM role
    ```properties
    cloud_storage_access_key: ***
    cloud_storage_api_endpoint: storage.googleapis.com
-   cloud_storage_bucket: pandabucket
+   cloud_storage_bucket: <redpanda_bucket>
    cloud_storage_enabled: true
-   cloud_storage_region: eu-north-1
+   cloud_storage_region: <eu-north-1>
    cloud_storage_secret_key: ***
    ```
 
@@ -110,20 +110,9 @@ For additional properties, see [Tiered Storage configuration properties](../tier
   </TabItem>
     <TabItem value="Azure" label="Azure Blob Storage" default>
 
-To configure access to an Azure Blob Storage container with an IAM role: 
+Configure access to Azure Blob Storage with either shared keys or with Active Directory (using either secrets or managed identities). 
 
-1. Configure an [IAM role](../../security/iam-roles). 
-
-2. Run the `rpk cluster config edit` command, then edit the following required properties:
-
-   ```properties
-   cloud_storage_enabled: true
-   cloud_storage_azure_storage_account: azure_account_name
-   cloud_storage_region: eu-north-1
-   cloud_storage_azure_container: pandacontainer
-   ```
-
-To configure access to Azure Blob Storage with shared keys instead of IAM roles:
+To configure access to Azure Blob Storage with shared keys:
 
 1. Grant a user the following permissions to read and create block blobs on the container to be used with the cluster (or on all containers): `Get Blob`, `Delete Blob`, `Put Blob`.
 2. For shared key authorization, copy the `cloud_storage_azure_shared_key` cluster property. For the client ID and secret for Active Directory authorization, copy `cloud_storage_azure_client_id` and `cloud_storage_azure_client_secret`.
@@ -134,9 +123,25 @@ To configure access to Azure Blob Storage with shared keys instead of IAM roles:
    cloud_storage_azure_shared_key: ***
    cloud_storage_azure_client_id: ***
    cloud_storage_azure_client_secret: ***
-   cloud_storage_region: eu-north-1
-   cloud_storage_azure_container: pandacontainer
+   cloud_storage_region: <eu-north-1>
+   cloud_storage_azure_container: <redpanda_container>
    ```
+   
+To configure access to an Azure Blob Storage container with Active Directory instead of shared keys: 
+
+*DRAFT*
+
+With managed identities, user doesn't provide secret; instead, user pins the permissions to the virtual machine, and Redpanda fetches them at runtime; see [here](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-use-vm-token). Azure has predefined roles that specify the operations allowed on a certain resource. The flow is to create a managed identity for a VM and then asign an RBAC role to it; see [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-managed-identity?source=recommendations). Redpanda needs to perform the same operations in Azure as in S3, so the most restrictive role we can use is "Storage Account Contributor" applied to the container.
+
+1. Run the `rpk cluster config edit` command, then edit the following required properties:
+
+   ```properties
+   cloud_storage_enabled: true
+   cloud_storage_azure_storage_account: <azure_account_name>
+   cloud_storage_region: <eu-north-1>
+   cloud_storage_azure_container: <redpanda_container>
+   ```
+
 
 For additional properties, see [Tiered Storage configuration properties](../tiered-storage#tiered-storage-configuration-properties).
 
