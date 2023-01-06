@@ -152,6 +152,8 @@ Kafka producer rate
 | redpanda_cloud_client_throttled | Number of client requests that were throttled. | --- | --- |
 | redpanda_cloud_storage_upload_backoff | Number of upload requests that backed off. | --- | --- |
 | redpanda_cloud_storage_download_backoff | Number of download requests that backed off. | --- | --- |
+| redpanda_cloud_client_uploads | Number of uploads to cloud storage. | Labels differ based on the cloud provider. For S3: endpoint (S3 endpoint) and region (S3 region). For Azure: endpoint (ABS endpoint) and storage_account (ABS account). | counter |
+| redpanda_cloud_client_downloads | Number of downloads from cloud storage. | Labels differ based on the cloud provider. For S3: endpoint (S3 endpoint) and region (S3 region). For Azure: endpoint (ABS endpoint) and storage_account (ABS account). | counter |
 
 #### Infrastructure-level queries
 
