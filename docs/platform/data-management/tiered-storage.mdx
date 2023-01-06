@@ -49,9 +49,10 @@ To configure access to an S3 bucket with an IAM role:
    ```properties
    cloud_storage_enabled: true
    cloud_storage_credentials_source: <aws_instance_metadata>
-   cloud_storage_region: <eu-north-1>
-   cloud_storage_bucket: <redpanda_bucket>
+   cloud_storage_region: <region>
+   cloud_storage_bucket: <redpanda_bucket_name>
    ```
+   Replace `<variables>` with your own values.
 
 To configure access to an S3 bucket with access keys instead of an IAM role:
 
@@ -63,9 +64,10 @@ To configure access to an S3 bucket with access keys instead of an IAM role:
    cloud_storage_enabled: true
    cloud_storage_access_key: ***
    cloud_storage_secret_key: ***
-   cloud_storage_region: <eu-north-1>
-   cloud_storage_bucket: <redpanda_bucket>
+   cloud_storage_region: <region>
+   cloud_storage_bucket: <redpanda_bucket_name>
    ```
+   Replace `<variables>` with your own values.
 
 For additional properties, see [Tiered Storage configuration properties](../tiered-storage#tiered-storage-configuration-properties).
 
@@ -83,9 +85,10 @@ To configure access to Google Cloud Storage with an IAM role:
    ```properties
    cloud_storage_enabled: true
    cloud_storage_credentials_source: <gcp_instance_metadata>
-   cloud_storage_region: <eu-north-1>
-   cloud_storage_bucket: <redpanda_bucket>
+   cloud_storage_region: <region>
+   cloud_storage_bucket: <redpanda_bucket_name>
    ```
+   Replace `<variables>` with your own values.
 
 To configure access to Google Cloud Storage with access keys instead of an IAM role:
 
@@ -96,13 +99,14 @@ To configure access to Google Cloud Storage with access keys instead of an IAM r
 5. Run the `rpk cluster config edit` command, then edit the following required properties:
 
    ```properties
+   cloud_storage_enabled: true
    cloud_storage_access_key: ***
    cloud_storage_api_endpoint: storage.googleapis.com
-   cloud_storage_bucket: <redpanda_bucket>
-   cloud_storage_enabled: true
-   cloud_storage_region: <eu-north-1>
+   cloud_storage_bucket: <redpanda_bucket_name>
+   cloud_storage_region: <region>
    cloud_storage_secret_key: ***
    ```
+   Replace `<variables>` with your own values.
 
 For additional properties, see [Tiered Storage configuration properties](../tiered-storage#tiered-storage-configuration-properties).
 
@@ -110,40 +114,26 @@ For additional properties, see [Tiered Storage configuration properties](../tier
   </TabItem>
     <TabItem value="Azure" label="Azure Blob Storage" default>
 
-Configure access to Azure Blob Storage with either shared keys or with Active Directory (using either secrets or managed identities). 
-
 To configure access to Azure Blob Storage with shared keys:
 
 1. Grant a user the following permissions to read and create block blobs on the container to be used with the cluster (or on all containers): `Get Blob`, `Delete Blob`, `Put Blob`.
-2. For shared key authorization, copy the `cloud_storage_azure_shared_key` cluster property. For the client ID and secret for Active Directory authorization, copy `cloud_storage_azure_client_id` and `cloud_storage_azure_client_secret`.
+2. Copy an account access key for the Azure container you want Redpanda to use. You'll enter this for the `cloud_storage_azure_shared_key` property. For information on how to view your account access keys, see the [Azure documentation](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json&tabs=azure-portal#view-account-access-keys). 
 3. Run the `rpk cluster config edit` command, then edit the following required properties:
 
    ```properties
    cloud_storage_enabled: true
-   cloud_storage_azure_shared_key: ***
-   cloud_storage_azure_client_id: ***
-   cloud_storage_azure_client_secret: ***
-   cloud_storage_region: <eu-north-1>
-   cloud_storage_azure_container: <redpanda_container>
-   ```
-   
-To configure access to an Azure Blob Storage container with Active Directory instead of shared keys: 
-
-*DRAFT*
-
-With managed identities, user doesn't provide secret; instead, user pins the permissions to the virtual machine, and Redpanda fetches them at runtime; see [here](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-use-vm-token). Azure has predefined roles that specify the operations allowed on a certain resource. The flow is to create a managed identity for a VM and then asign an RBAC role to it; see [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-managed-identity?source=recommendations). Redpanda needs to perform the same operations in Azure as in S3, so the most restrictive role we can use is "Storage Account Contributor" applied to the container.
-
-1. Run the `rpk cluster config edit` command, then edit the following required properties:
-
-   ```properties
-   cloud_storage_enabled: true
+   cloud_storage_azure_shared_key: <azure_account_access_key>
    cloud_storage_azure_storage_account: <azure_account_name>
-   cloud_storage_region: <eu-north-1>
-   cloud_storage_azure_container: <redpanda_container>
+   cloud_storage_azure_container: <redpanda_container_name>
+   cloud_storage_region: <region>
    ```
+   Replace `<variables>` with your own values.
 
 
-For additional properties, see [Tiered Storage configuration properties](../tiered-storage#tiered-storage-configuration-properties).
+- For additional properties, see [Tiered Storage configuration properties](../tiered-storage#tiered-storage-configuration-properties).
+  
+- For more information about shared key authentication, see the [Azure documentation](https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-with-shared-key).
+
 
   </TabItem>
     </Tabs>
@@ -292,15 +282,9 @@ Use the `cloud_storage_segment_max_upload_interval_sec` property to set the numb
 
 ### Reconciliation 
 
-Reconciliation is a Redpanda process that runs periodically on every node. It monitors partitions and decides which partitions are uploaded on each Redpanda node to guarantee that data is uploaded only once. It also balances the workload evenly between nodes.
+Reconciliation is a Redpanda process that runs periodically on every node. It monitors partitions and decides which partitions are uploaded on each node to guarantee that data is uploaded only once. It also balances the workload evenly between nodes. 
 
-When leadership rebalancing occurs, the reconciliation process might stop uploads on one node and start them on another node. 
-
-The reconciliation process is configured with the `cloud_storage_reconciliation_interval_ms` property. Edit the property with the `rpk cluster config edit` command.
-
-| Property      | Description |
-| ----------- | ----------- |
-| `cloud_storage_reconciliation_interval_ms` | Sets the interval, in milliseconds, used to reconcile partitions that need to be uploaded. A long reconciliation interval can result in a delayed reaction to topic creation, topic deletion, or leadership rebalancing events. A short reconciliation interval guarantees that new partitions are picked up quickly, but the process uses more resources. Default is 1 s. |
+Redpanda reacts to partition leadership changes. When leadership rebalancing occurs, the reconciliation process could start uploading to cloud storage from a different node.
 
 ### Upload controller
 
@@ -434,10 +418,10 @@ Under normal circumstances, you should not need to configure the following prope
 | `cloud_storage_upload_ctrl_d_coeff` | The derivative coefficient for the upload controller. Default is 0. |
 | `cloud_storage_upload_ctrl_min_shares` | The minimum number of I/O and CPU shares that the remote write process can use. Default is 100. |
 | `cloud_storage_upload_ctrl_max_shares` | The maximum number of I/O and CPU shares that the remote write process can use. Default is 1000. |
-| `cloud_storage_reconciliation_interval_ms` | The interval, in milliseconds, to reconcile partitions that need to be uploaded. A long reconciliation interval can result in a delayed reaction to topic creation, topic deletion, or leadership rebalancing events. A short reconciliation interval guarantees that new partitions are picked up quickly, but the process uses more resources. Default is 10000 ms. |
 | `cloud_storage_disable_tls` | Disables TLS encryption. You can set this to true if TLS termination is done by the proxy, such as HAProxy. Default is false.  |
 | `cloud_storage_api_endpoint_port` | Overrides the default API endpoint port. Default is 443. |
 | `cloud_storage_trust_file` | The public certificate used to validate the TLS connection to cloud storage. If this is empty, Redpanda uses your operating system's CA cert pool. |
+| `cloud_storage_reconciliation_interval_ms` | Deprecated. <br/><br/> The interval, in milliseconds, to reconcile partitions that need to be uploaded. A long reconciliation interval can result in a delayed reaction to topic creation, topic deletion, or leadership rebalancing events. A short reconciliation interval guarantees that new partitions are picked up quickly, but the process uses more resources. Default is 10000 ms. |
 
 ---
 
