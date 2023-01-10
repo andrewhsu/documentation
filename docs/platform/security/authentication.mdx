@@ -71,9 +71,9 @@ For information about using `rpk` to manage ACL users, see [rpk acl](../../refer
 As a security best practice, don't use the superuser to interact with the cluster, and don't delete the superuser (in case you need to grant permissions to new users later). In addition, when you create the superuser, you specify a password, which adds a level of security. If you delete the user, someone else could re-create the user with a different password.
 :::
 
-## SASL/SCRAM
+## SASL
 
-Simple Authentication Security Layer (SASL) is an authentication framework that lets the user choose the authentication mechanism. Redpanda supports the Salted Challenge Response Authentication Mechanism (SCRAM) authentication method.
+Simple Authentication Security Layer (SASL) is an authentication framework that lets the user choose the authentication mechanism. Redpanda supports Kerberos (GSSAPI) and the Salted Challenge Response Authentication Mechanism (SCRAM) authentication methods.
 
 :::note
 SASL authentication is only available for the Kafka API.
@@ -85,6 +85,7 @@ SCRAM provides strong encryption for user names and passwords by default and doe
 
 * `SCRAM-SHA-256`
 * `SCRAM-SHA-512`
+* `GSSAPI`
 
 When you run a command with SASL authentication, you must include the mechanism with the following flag: 
 
@@ -96,10 +97,139 @@ For example, to use the `SCRAM-SHA-256` mechanism, run:
 
 ```bash
 rpk topic create littlefoot \
---user panda \
---password pandaPassword \
+--user <panda> \
+--password <pandaPassword> \
 --sasl-mechanism SCRAM-SHA-256
 ```
+
+### Enable Kerberos
+
+
+#### Prerequisites
+
+1. Ensure that host names and fully qualified domain names (FQDN) are configured properly and don't need to be changed in the near future.
+
+2. Install the `krb5-workstation` library on all Redpanda nodes.
+
+<Tabs>
+  <TabItem value="Debian" label="Debian" default>
+
+```bash
+$ sudo apt install krb5-workstation krb5-libs
+```
+
+  </TabItem>
+      <TabItem value="RHEL/CentOS" label="RHEL/CentOS" default>
+
+
+```bash
+$ sudo yum install krb5-workstation krb5-libs
+```
+
+  </TabItem>
+    </Tabs>
+
+3. Install required libraries for Kerberos on Redpanda nodes. Configure the `/etc/krb5.conf` file to use Active Directory or other corporate key distribution center (KDC). In the following example, `krb5.conf` has configurations in bold showing realm information that needs to point to the proper corporate KDC.
+
+  ```bash
+  [logging]
+   default      = FILE:/var/log/krb5libs.log
+   kdc          = FILE:/var/log/krb5kdc.log
+   admin_server = FILE:/var/log/kadmind.log
+  [libdefaults]
+   default_realm    = REFARCH-AD.CLOUD.LAB.REDHAT.COM
+   dns_lookup_realm = false
+   dns_lookup_kdc   = false
+   ticket_lifetime  = 24h
+   renew_lifetime   = 7d
+   forwardable      = true
+  [realms]
+   REFARCH-AD.CLOUD.LAB.REDHAT.COM = {
+    kdc          = WIN-SRV1.REFARCH-AD.CLOUD.LAB.REDHAT.COM
+    admin_server = WIN-SRV1.REFARCH-AD.CLOUD.LAB.REDHAT.COM
+   }
+  [domain_realm]
+   .demo = REFARCH-AD.CLOUD.LAB.REDHAT.COM 
+    demo = REFARCH-AD.CLOUD.LAB.REDHAT.COM
+  ```
+
+4. For each node, create two principals: `host/<FQDN>@<REALM>.COM` and `redpanda/<FQDN>@<REALM>.COM`, ensuring that the expiration date is suitably long and the tickets are renewable.
+   
+
+#### Enable Kerberos for an existing cluster
+
+1. Generate keytabs for all nodes:
+
+  ```bash
+  # Generate all keytabs in cluster with a provided password
+  $ rpk security generate-keytabs
+
+  # Regenerate all keytabs in cluster
+  $ rpk security generate-keytabs --regenerate
+  ```
+
+2. Verify that the Redpanda user can find, read, and renew the Kerberos ticket. To validate Kerberos keytabs:
+
+  ```bash
+  $ rpk security debug-keytabs
+    Inspecting keytab on redpanda-01: OK
+      * keytab found: yes
+          - /etc/redpanda/redpanda.keytab
+      * keytab readable: yes
+      * service principal found: yes
+          - redpanda/redpanda-01.example.com
+      * ticket renewable: yes
+    Inspecting keytab on redpanda-02: ERROR
+      * keytab found: yes
+          - /etc/redpanda/redpanda.keytab
+      * keytab readable: no
+    Inspecting keytab on redpanda-03: OK
+    ... 
+  ```
+
+3. Enable Kerberos (SASL/GSSAPI) for the Kafka API by adding GSSAPI to the Redpanda property `sasl.enabled.mechanisms`:
+
+  ```bash
+  $ rpk cluster config set enable_sasl true
+
+  # Update the sasl mechanisms list to include Kerberos (GSSAPI)
+  $ rpk cluster config set sasl_mechanisms GSSAPI,SCRAM
+  ```
+
+
+#### Enable Kerberos for a new node
+
+1. Redpanda administrator generates keytabs for the new node. The following example shows options to regenerate keytabs in the cluster taking into account principals may require unique passwords per corporate policy.
+
+  ```bash
+  # Generate new single keytab in cluster using unique password
+  $ rpk security generate-keytabs
+    redpanda-01: keytab already exists.
+    redpanda-02: keytab already exists.
+    redpanda-03: creating keytab.
+  ```
+
+1. Redpanda administrator verifies that the redpanda user can find, read, and renew the kerberos ticket. Example command to validate correctness and usability of Kerberos keytabs:
+   
+  ```bash
+  $ rpk security debug-keytabs
+    Inspecting keytab on redpanda-01: OK
+      * keytab found: yes
+          - /etc/redpanda/redpanda.keytab
+      * keytab readable: yes
+      * service principal found: yes
+          - redpanda/redpanda-01.example.com
+      * ticket renewable: yes
+    Inspecting keytab on redpanda-02: ERROR
+      * keytab found: yes
+          - /etc/redpanda/redpanda.keytab
+      * keytab readable: no
+    Inspecting keytab on redpanda-03: OK
+    ... 
+  ```
+
+3. Redpanda administrator starts broker service
+
 
 ### Configure SASL authentication
 
