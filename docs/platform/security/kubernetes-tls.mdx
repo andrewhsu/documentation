@@ -17,7 +17,7 @@ import TabItem from '@theme/TabItem';
 Redpanda supports Transport Layer Security (TLS) encryption in Kubernetes. TLS authenticates the Redpanda brokers and encrypts communication between clients and brokers. To configure TLS do the following:
 
 1. [Install cert-manager](#install-cert-manager)
-1. Use a [self-signed certificate](#use-a-self-signed-certificate) or a [custom Issuer](#use-a-custom-issuer)
+1. Configure the Helm chart to create a [self-signed certificate](#use-a-self-signed-certificate) or [use an existing custom Issuer](#use-a-custom-issuer)
 
 ## Prerequisites
 
@@ -25,7 +25,7 @@ You need the following:
 
 -  A custom domain
 
-- [External access](../../manage-kubernetes/networking-and-connectivity) to your Redpanda cluster. Your Redpanda broker should advertise an address in your domain.
+- [External access](../../manage-kubernetes/networking-and-connectivity) to your Redpanda cluster. Your Redpanda broker should advertise an address in your custom domain.
 
 ## Install cert-manager
 
@@ -57,8 +57,6 @@ helm install cert-manager jetstack/cert-manager \
     domain: <custom-domain>
   ```
 
-  During install or upgrade, reference the TLS configuration values file:
-
   ```bash
   helm upgrade --install redpanda redpanda/redpanda -n redpanda --create-namespace \
     --values enable-tls.yaml
@@ -76,21 +74,31 @@ helm install cert-manager jetstack/cert-manager \
   </TabItem>
   </Tabs>
 
-```bash
-kubectl exec redpanda-0 -n redpanda -c redpanda -- rpk cluster info --tls-enabled --brokers=redpanda-0.redpanda.redpanda.svc.cluster.local.:9093 --tls-truststore /etc/tls/certs/default/ca.crt
-```
-```
-CLUSTER
-=======
-redpanda.a8607359-0459-477a-ac2a-639cc6d3521d
+1. Test your local connection:
 
-BROKERS
-=======
-ID    HOST                                             PORT
-0*    redpanda-0.redpanda.redpanda.svc.cluster.local.  9093
-1     redpanda-1.redpanda.redpanda.svc.cluster.local.  9093
-2     redpanda-2.redpanda.redpanda.svc.cluster.local.  9093
-```
+  ```bash
+  kubectl exec redpanda-0 -n redpanda -c redpanda -- rpk cluster info --tls-enabled --brokers=redpanda-0.redpanda.redpanda.svc.cluster.local.:9093 --tls-truststore /etc/tls/certs/default/ca.crt
+  ```
+
+  <details>
+  <summary>
+  Example output
+  </summary>
+  
+  ```
+  CLUSTER
+  =======
+  redpanda.19ae8532-c8fa-49ed-8b35-82d74813db3a
+
+  BROKERS
+  =======
+  ID    HOST                                             PORT
+  0*    redpanda-0.redpanda.redpanda.svc.cluster.local.  9093
+  1     redpanda-1.redpanda.redpanda.svc.cluster.local.  9093
+  2     redpanda-2.redpanda.redpanda.svc.cluster.local.  9093
+  ```
+  
+  </details>
 
 1. Retrieve the root certificate authority (CA) to use with external clients:
 
@@ -98,15 +106,17 @@ ID    HOST                                             PORT
   kubectl -n redpanda get secret redpanda-default-root-certificate -o go-template='{{ index .data "ca.crt" | base64decode }}' > ca.crt
   ```
 
-1. Use that root CA to validate your connection to Redpanda:
+1. Use that root CA to validate your external connection to Redpanda with rpk.
+
+  Replace `<custom-domain>` with your domain. Replace `<external-port>` with the port on which your cluster is exposed.
 
   ```bash
-  rpk cluster info --brokers <custom-domain> --tls-truststore ca.crt
+  rpk cluster info --brokers <custom-domain>:<external-port> --tls-truststore ca.crt
   ```
 
 ## Use a custom Issuer
 
-You can use your own Issuer or ClusterIssuer to take advantage of an ACME certificate provider such as Let's Encrypt or to use an intermediate certificate authority (CA).
+You can use your own Issuer or ClusterIssuer to take advantage of an ACME certificate provider such as Let's Encrypt or to use any other intermediate certificate authority (CA).
 
 1. Create an Issuer in the same namespace as your Redpanda cluster, or create a ClusterIssuer. For details, see the [cert-manager documentation](https://cert-manager.io/docs/concepts/issuer/).
 
@@ -133,8 +143,6 @@ You can use your own Issuer or ClusterIssuer to take advantage of an ACME certif
     domain: <custom-domain>
   ```
 
-  During install or upgrade, reference the TLS configuration values file:
-
   ```bash
   helm upgrade --install redpanda redpanda/redpanda -n redpanda --create-namespace \
     --values enable-tls.yaml
@@ -153,6 +161,14 @@ You can use your own Issuer or ClusterIssuer to take advantage of an ACME certif
 
   </TabItem>
   </Tabs>
+
+1. Validate your external connection to Redpanda with rpk.
+
+  Replace `<custom-domain>` with your domain. Replace `<external-port>` with the port on which your cluster is exposed.
+
+  ```bash
+  rpk cluster info --brokers <custom-domain>:<external-port>
+  ```
 
 ## Next steps
 
