@@ -116,9 +116,8 @@ For additional properties, see [Tiered Storage configuration properties](../tier
 
 To configure access to Azure Blob Storage with shared keys:
 
-1. Grant a user the following permissions to read and create block blobs on the container to be used with the cluster (or on all containers): `Get Blob`, `Delete Blob`, `Put Blob`.
-2. Copy an account access key for the Azure container you want Redpanda to use. You'll enter this for the `cloud_storage_azure_shared_key` property. For information on how to view your account access keys, see the [Azure documentation](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json&tabs=azure-portal#view-account-access-keys). 
-3. Run the `rpk cluster config edit` command, then edit the following required properties:
+1. Copy an account access key for the Azure container you want Redpanda to use. You'll enter this for the `cloud_storage_azure_shared_key` property. For information on how to view your account access keys, see the [Azure documentation](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json&tabs=azure-portal#view-account-access-keys). 
+2. Run the `rpk cluster config edit` command, then edit the following required properties:
 
    ```properties
    cloud_storage_enabled: true
