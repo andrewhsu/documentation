@@ -7,9 +7,6 @@ title: Configure Authentication
     <meta name="description" content="Redpanda supports multiple forms of authentication including SASL/SCRAM, basic authentication, and mTLS with principal mapping."/>
 </head>
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 
 Different components of Redpanda support different authentication methods. You can configure multiple listeners with `redpanda.yaml`, and with each listener, you can configure the `authentication_method` and optionally TLS or mTLS. The guidelines put in place by your organization determine the type of authentication that you use.
 
@@ -148,27 +145,19 @@ redpanda:
 
 1. Ensure that host names and fully qualified domain names (FQDN) are configured properly and don't need to be changed in the near future.
 
-2. Install the `krb5-workstation` library on all Redpanda nodes.
+2. Install the `krb5-workstation` library on all Redpanda nodes:
 
-<Tabs>
-  <TabItem value="Debian" label="Debian" default>
+  ```bash
+  #On Debian:
+  $ sudo apt install krb5-workstation krb5-libs
 
-```bash
-$ sudo apt install krb5-workstation krb5-libs
-```
+  # On RHEL/CentOS:
+  $ sudo yum install krb5-workstation krb5-libs
+  ```
 
-  </TabItem>
-      <TabItem value="RHEL/CentOS" label="RHEL/CentOS" default>
-
-
-```bash
-$ sudo yum install krb5-workstation krb5-libs
-```
-
-  </TabItem>
-    </Tabs>
-
-3. Install required libraries for Kerberos on Redpanda nodes. Configure the `/etc/krb5.conf` file to use Active Directory or other corporate key distribution center (KDC). In the following example, `krb5.conf` has configurations in bold showing realm information that needs to point to the proper corporate KDC.
+1. Install required libraries for Kerberos on Redpanda nodes. Configure the `/etc/krb5.conf` file to use Active Directory or other corporate key distribution center (KDC). 
+   
+   In the following example, `krb5.conf` has configurations in bold showing realm information that needs to point to the proper corporate KDC.
 
   ```bash
   [logging]
@@ -192,8 +181,7 @@ $ sudo yum install krb5-workstation krb5-libs
     demo = REFARCH-AD.CLOUD.LAB.REDHAT.COM
   ```
 
-4. For each node, create two principals: `host/<FQDN>@<REALM>.COM` and `redpanda/<FQDN>@<REALM>.COM`, ensuring that the expiration date is suitably long and the tickets are renewable.
-   
+1. For each node, create two principals: `host/<FQDN>@<REALM>.COM` and `redpanda/<FQDN>@<REALM>.COM`, ensuring that the expiration date is long enough and the tickets are renewable.
 
 #### Enable Kerberos for an existing cluster
 
@@ -230,15 +218,16 @@ $ sudo yum install krb5-workstation krb5-libs
 
   ```bash
   $ rpk cluster config set enable_sasl true
-
-  # Update the sasl mechanisms list to include Kerberos (GSSAPI)
   $ rpk cluster config set sasl_mechanisms GSSAPI,SCRAM
+
+  # or use the synonym “KERBEROS”
+  $ rpk cluster config set sasl_mechanisms KERBEROS,SCRAM
   ```
 
 
 #### Enable Kerberos for a new node
 
-1. Redpanda administrator generates keytabs for the new node. The following example shows options to regenerate keytabs in the cluster taking into account principals may require unique passwords per corporate policy.
+1. Redpanda administrator generates keytabs for the new node. The following example shows options to regenerate keytabs in the cluster. (Account principals may require unique passwords.)
 
   ```bash
   # Generate new single keytab in cluster using unique password
@@ -248,7 +237,7 @@ $ sudo yum install krb5-workstation krb5-libs
     redpanda-03: creating keytab.
   ```
 
-2. Redpanda administrator verifies that the redpanda user can find, read, and renew the kerberos ticket. Example command to validate correctness and usability of Kerberos keytabs:
+1. Verifies that the Redpanda user can find, read, and renew the kerberos ticket. To validate Kerberos keytabs:
    
   ```bash
   $ rpk security debug-keytabs
@@ -268,24 +257,6 @@ $ sudo yum install krb5-workstation krb5-libs
   ```
 
 3. Redpanda administrator starts broker service
-
-#### Enable Kerberos
-To enable Kerberos (GSSAPI) authentication, add GSSAPI to the `sasl_mechanisms` list.
-
-```bash
-$ rpk cluster config set sasl_mechanisms GSSAPI,SCRAM
-
-# or use the synonym “KERBEROS”
-
-$ rpk cluster config set sasl_mechanisms KERBEROS,SCRAM
-```
-
-#### Disable Kerberos
-To disable Kerberos authentication, remove GSSAPI from the `sasl_mechanisms` list.
-
-```bash
-$ rpk cluster config set sasl_mechanisms SCRAM
-```
 
 ### Configure Schema Registry and HTTP Proxy to connect to Redpanda with SASL
 
