@@ -1,5 +1,5 @@
 ---
-title: Configuring Authentication
+title: Configure Authentication
 ---
 
 <head>
@@ -71,21 +71,17 @@ For information about using `rpk` to manage ACL users, see [rpk acl](../../refer
 As a security best practice, don't use the superuser to interact with the cluster, and don't delete the superuser (in case you need to grant permissions to new users later). In addition, when you create the superuser, you specify a password, which adds a level of security. If you delete the user, someone else could re-create the user with a different password.
 :::
 
-## SASL
+## Enable SASL authentication
 
-Simple Authentication Security Layer (SASL) is an authentication framework that lets the user choose the authentication mechanism. Redpanda supports Kerberos (GSSAPI) and the Salted Challenge Response Authentication Mechanism (SCRAM) authentication methods.
-
-:::note
-SASL authentication is only available for the Kafka API.
-:::
-
-SASL provides authentication, but not encryption. You can, however, configure TLS to only handle encryption, and use SASL for authentication. This is useful if you require flexibility in your authorization mechanisms.
-
-SCRAM provides strong encryption for user names and passwords by default and does not require an external data store for user information. Redpanda supports the following SASL mechanisms: 
+Simple Authentication Security Layer (SASL) is an authentication framework that lets the user choose the authentication mechanism. Redpanda supports Kerberos (GSSAPI) and the Salted Challenge Response Authentication Mechanism (SCRAM) authentication methods. SCRAM provides strong encryption for user names and passwords by default and does not require an external data store for user information. Redpanda supports the following SASL mechanisms: 
 
 * `SCRAM-SHA-256`
 * `SCRAM-SHA-512`
 * `GSSAPI`
+
+:::note
+SASL authentication is only available for the Kafka API.
+:::
 
 When you run a command with SASL authentication, you must include the mechanism with the following flag: 
 
@@ -102,8 +98,51 @@ rpk topic create littlefoot \
 --sasl-mechanism SCRAM-SHA-256
 ```
 
-### Enable Kerberos
 
+### Configure SASL authentication
+
+To configure SASL authentication for the Kafka API, set `authentication_method` of the listener to `sasl`. 
+
+In `redpanda.yaml`, enter: 
+
+```yaml
+redpanda:
+  kafka_api:
+    - address: 0.0.0.0
+      port: 9092
+      name: sasl_listener
+// highlight-start
+      authentication_method: sasl
+// highlight-end
+```
+
+### Enable SASL with TLS encryption 
+
+SASL provides authentication, but not encryption. You can, however, configure TLS to only handle encryption, and use SASL for authentication. This is useful if you require flexibility in your authorization mechanisms.
+
+To enable SASL authentication with TLS encryption for the Kafka API, in `redpanda.yaml`, enter: 
+
+```yaml
+redpanda:
+  kafka_api:
+    - address: 0.0.0.0
+      port: 9092
+// highlight-start
+      name: sasl_tls_listener
+      authentication_method: sasl
+// highlight-end
+  kafka_api_tls:
+// highlight-start
+    - name: sasl_tls_listener
+      key_file: server.key
+      cert_file: server.crt
+      truststore_file: ca.crt
+      enabled: true
+      require_client_auth: false
+// highlight-end
+```
+
+### Enable Kerberos
 
 #### Prerequisites
 
@@ -209,7 +248,7 @@ $ sudo yum install krb5-workstation krb5-libs
     redpanda-03: creating keytab.
   ```
 
-1. Redpanda administrator verifies that the redpanda user can find, read, and renew the kerberos ticket. Example command to validate correctness and usability of Kerberos keytabs:
+2. Redpanda administrator verifies that the redpanda user can find, read, and renew the kerberos ticket. Example command to validate correctness and usability of Kerberos keytabs:
    
   ```bash
   $ rpk security debug-keytabs
@@ -230,46 +269,22 @@ $ sudo yum install krb5-workstation krb5-libs
 
 3. Redpanda administrator starts broker service
 
+#### Enable Kerberos
+To enable Kerberos (GSSAPI) authentication, add GSSAPI to the `sasl_mechanisms` list.
 
-### Configure SASL authentication
+```bash
+$ rpk cluster config set sasl_mechanisms GSSAPI,SCRAM
 
-To configure SASL authentication for the Kafka API, set `authentication_method` of the listener to `sasl`. 
+# or use the synonym “KERBEROS”
 
-In `redpanda.yaml`, enter: 
-
-```yaml
-redpanda:
-  kafka_api:
-    - address: 0.0.0.0
-      port: 9092
-      name: sasl_listener
-// highlight-start
-      authentication_method: sasl
-// highlight-end
+$ rpk cluster config set sasl_mechanisms KERBEROS,SCRAM
 ```
 
-### Enable SASL with TLS encryption 
+#### Disable Kerberos
+To disable Kerberos authentication, remove GSSAPI from the `sasl_mechanisms` list.
 
-To enable SASL authentication with TLS encryption for the Kafka API, in `redpanda.yaml`, enter: 
-
-```yaml
-redpanda:
-  kafka_api:
-    - address: 0.0.0.0
-      port: 9092
-// highlight-start
-      name: sasl_tls_listener
-      authentication_method: sasl
-// highlight-end
-  kafka_api_tls:
-// highlight-start
-    - name: sasl_tls_listener
-      key_file: server.key
-      cert_file: server.crt
-      truststore_file: ca.crt
-      enabled: true
-      require_client_auth: false
-// highlight-end
+```bash
+$ rpk cluster config set sasl_mechanisms SCRAM
 ```
 
 ### Configure Schema Registry and HTTP Proxy to connect to Redpanda with SASL
