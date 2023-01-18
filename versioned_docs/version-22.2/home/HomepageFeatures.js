@@ -5,12 +5,12 @@ const FeatureList = [
   {
     title: 'Redpanda Platform',
     image: require('../../../static/img/panda.png').default,
-    url: '/docs/home/platform',
+    url: '../home/platform/',
   },
   {
     title: 'Redpanda Cloud',
     image: require('../../../static/img/cloud.png').default,
-    url: '/docs/home/cloud',
+    url: '../home/cloud/',
   },
 ];
 

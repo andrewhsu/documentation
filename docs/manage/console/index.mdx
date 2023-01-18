@@ -1,0 +1,36 @@
+---
+title: Manage Redpanda Console
+---
+
+<head>
+    <meta name="title" content="Manage Redpanda Console | Redpanda Docs"/>
+    <meta name="description" content="Manage Redpanda Console"/>
+</head>
+
+- [Kafka Connect](../console/kafka-connect)
+
+    Redpanda Console provides a user interface that enables you to manage multiple Kafka connect clusters.
+    You can inspect or patch connectors, restart/pause/resume their tasks, and also delete a connector.
+    If you have configured more than one cluster, Redpanda Console will query all configured connect
+    clusters for their status, so that you can have an overview across all your connect clusters.
+
+- [Schema Registry](../console/schema-registry)
+
+    To deserialize Kafka records that have been encoded with a schema registry compatible serializer, such as  
+    `io.confluent.kafka.serializers.KafkaAvroSerializer`, you must have a valid schema registry configuration in Redpanda Console. 
+
+- [Protobuf Deserialization](../console/protobuf)
+
+    If you have one or more topics that contain Protobuf serialized messages, you can configure Redpanda Console to deserialize 
+    the binary content into JSON, which makes the message human-readable. The resulting message can also be used in the 
+    [programmable push filters](../../reference/console/programmable-push-filters) like a JavaScript object.
+
+- [Topic Documentation](../console/topic-documentation)
+
+    You can embed your topic's documentation into the Redpanda Console user interface by providing access to a GitHub repository that hosts your documentation files in Markdown format. 
+
+
+- [HTTP Path Rewrites](../console/http-path-rewrites)
+
+    To host Redpanda Console under an HTTP path different from the root path (for example `https://my-company.com/redpanda/console`),
+    then you need to configure this in Redpanda Console. 

@@ -1,0 +1,143 @@
+---
+title: Redpanda Quickstart on macOS
+---
+
+<head>
+    <meta name="title" content="Redpanda Quickstart on macOS| Redpanda Docs"/>
+    <meta name="description" content="Redpanda Quickstart on macOS."/>
+</head>
+
+You can only run Redpanda directly on Linux. However, you can run Redpanda on macOS in a Docker container. This guide helps you get started with Redpanda for development and testing on macOS.
+
+For production or benchmarking, see [Deploying for Production](../../../deploy/deployment-option/self-hosted/manual/production/production-deployment).
+
+## Get Redpanda running
+
+To run Redpanda on MacOS, use `rpk` to bring up Redpanda nodes in Docker containers.
+Make sure that you install [Docker](https://docs.docker.com/docker-for-mac/install/) first.
+
+To customize the containers, you can also set up your own [Redpanda containers in Docker](../quick-start-docker).
+
+## Install `rpk`
+
+You can install `rpk` on MacOS either with [Homebrew](https://brew.sh/), or you can just download the binary.
+
+- To install `rpk` with Homebrew: `brew install redpanda-data/tap/redpanda`
+- To download the `rpk` binary:
+
+    1. Download the [rpk archive](https://github.com/redpanda-data/redpanda/releases/latest/download/rpk-darwin-amd64.zip) with `curl -LO https://github.com/redpanda-data/redpanda/releases/latest/download/rpk-darwin-amd64.zip`.
+    2. Unpack the archive to `/usr/local/bin` or any location in your `$PATH` with `unzip rpk-darwin-amd64.zip`.
+
+## Run a Redpanda cluster
+
+Run Redpanda in a three-node cluster: 
+
+`rpk container start -n 3`
+
+The first time you run `rpk container start`, it downloads an image matching the rpk version (you can check it by running `rpk version`).
+You now have a three-node cluster running Redpanda.
+
+The command output shows the addresses of the cluster nodes:
+
+```bash
+$ rpk container start -n 3
+Downloading latest version of Redpanda
+Starting cluster
+Waiting for the cluster to be ready...
+  NODE ID  ADDRESS          
+  0        127.0.0.1:49462  
+  1        127.0.0.1:49468  
+  2        127.0.0.1:49467  
+```
+
+You can run `rpk` commands to interact with the cluster; for example:
+
+```bash
+rpk cluster info --brokers 127.0.0.1:49462,127.0.0.1:49468,127.0.0.1:49467
+```
+
+## Delete the nodes
+
+When you're finished with the cluster, shut down and delete the nodes:
+
+```bash
+rpk container purge
+```
+
+## Start Streaming
+
+`rpk` is a CLI tool you can use to work with your Redpanda nodes. Refer to [rpk Commands](../../../reference/rpk/rpk-topic) for more information about `rpk`.
+
+Here are some sample commands to produce and consume streams:
+
+Create a topic called `twitch_chat`:
+
+```bash
+rpk topic create twitch_chat
+```
+
+Output:
+
+```text
+TOPIC       STATUS
+twitch_chat  OK
+```
+
+Produce a message into the topic:
+
+```bash
+rpk topic produce twitch_chat
+```
+
+Enter a message:
+
+```text
+Pandas are fabulous!
+```
+
+Output:
+
+```text
+Produced to partition 0 at offset 0 with timestamp 1663282629795.
+```
+
+Click `ctrl-d` (or `ctrl-z` on Windows) to finish sending messages to the topic.
+
+Consume one message from the topic:
+
+```bash
+rpk topic consume twitch_chat --num 1
+```
+
+Each message is shown with its metadata, like this:
+
+```json
+{
+  "topic": "twitch_chat",
+  "value": "Pandas are fabulous!",
+  "timestamp": 1663282629795,
+  "partition": 0,
+  "offset": 0
+}
+```
+
+You can delete your topic by running:
+
+```bash
+rpk topic delete twitch_chat
+```
+
+Output:
+
+```text
+TOPIC       STATUS
+twitch_chat  OK
+```
+
+## Next steps
+- [Deploying for Production](../../../deploy/deployment-option/self-hosted/manual/production/production-deployment)
+
+## Suggested reading
+
+- [Which Kafka clients does Redpanda support?](../../../develop/kafka-clients)
+- [Example on how to setup Redpanda with NodeJS](../../../develop/guide-nodejs)

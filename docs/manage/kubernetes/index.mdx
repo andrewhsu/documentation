@@ -1,0 +1,26 @@
+---
+title: Manage Self-Hosted on Kubernetes
+---
+
+<head>
+    <meta name="title" content="Manage Self-Hosted on Kubernetes | Redpanda Docs"/>
+    <meta name="description" content="Manage Self-Hosted on Kubernetes."/>
+</head>
+
+- [Helm Configuration](../kubernetes/helm-configuration)
+
+- [Rack Awareness](../kubernetes/kubernetes-rack-awareness)
+
+    Rack awareness allows you to distribute replicas of the same partition across different racks to minimize data loss in the event of a rack failure. A rack is a failure zone that has one or more Redpanda brokers assigned to it.
+
+- [Security](../kubernetes/security)
+
+  - [Configure TLS on Kubernetes](../kubernetes/security/kubernetes-tls)
+
+      Redpanda supports Transport Layer Security (TLS) encryption in Kubernetes. For certificate management, the Redpanda Helm chart uses cert-manager with either a self-signed Issuer or your own custom Issuer.
+
+  - [Configure SASL on Kubernetes](../kubernetes/security/sasl-kubernetes)
+
+      Simple Authentication and Security Layer (SASL) is a method for adding authentication support to connection-based protocols. When using the Redpanda Helm chart, SASL provides authentication between the server and client. To encrypt communication, use TLS encryption. You must use TLS encryption to have secure authentication using SASL.
+
+- [Configure Storage](../kubernetes/configure-storage)

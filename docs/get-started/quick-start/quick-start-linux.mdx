@@ -1,0 +1,140 @@
+---
+title: Redpanda Quickstart on Linux
+---
+
+<head>
+    <meta name="title" content="Redpanda Quickstart on Linux| Redpanda Docs"/>
+    <meta name="description" content="Redpanda Quickstart on Linux."/>
+</head>
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+You can run Redpanda directly on Linux. This guide helps you get started with Redpanda for development and testing on Linux.
+
+For production or benchmarking, see [Deploying for Production](../../../deploy/deployment-option/self-hosted/manual/production/production-deployment).
+
+## Install and run Redpanda
+
+Installation requires just a few commands:
+
+<Tabs>
+<TabItem value="fedora" label="Fedora/RedHat" default>
+
+
+  ```bash
+  ## Run the setup script to download and install the repo
+  curl -1sLf 'https://dl.redpanda.com/nzc4ZYQK3WRGd9sy/redpanda/cfg/setup/bash.rpm.sh' | sudo -E bash && \
+  ## Use yum to install redpanda
+  sudo yum install redpanda -y && \
+  ## Start redpanda as a service 
+  sudo systemctl start redpanda
+  ```
+
+
+</TabItem>
+<TabItem value="debian" label="Debian/Ubuntu" default>
+
+```bash
+## Run the setup script to download and install the repo
+curl -1sLf 'https://dl.redpanda.com/nzc4ZYQK3WRGd9sy/redpanda/cfg/setup/bash.deb.sh' | sudo -E bash && \
+## Use apt to install redpanda
+sudo apt install redpanda -y && \
+## Start redpanda as a service 
+sudo systemctl start redpanda
+```
+
+</TabItem>
+</Tabs>
+
+Verify that Redpanda is up and running: 
+
+`sudo systemctl status redpanda`
+
+The output should look similar to the following:
+
+```bash
+redpanda.service - Redpanda, the fastest queue in the West.
+     Loaded: loaded (/lib/systemd/system/redpanda.service; enabled; vendor preset: enabled)
+     Active: active (running)
+```
+
+You now have a single-node cluster running Redpanda.
+
+## Start Streaming
+
+`rpk` is a CLI tool you can use to work with your Redpanda nodes. Refer to [rpk Commands](../../../reference/rpk/rpk-topic) for more information about `rpk`.
+
+Here are some sample commands to produce and consume streams:
+
+Create a topic called `twitch_chat`:
+
+```bash
+rpk topic create twitch_chat
+```
+
+Output:
+
+```text
+TOPIC       STATUS
+twitch_chat  OK
+```
+
+Produce a message into the topic:
+
+```bash
+rpk topic produce twitch_chat
+```
+
+Enter a message:
+
+```text
+Pandas are fabulous!
+```
+
+Output:
+
+```text
+Produced to partition 0 at offset 0 with timestamp 1663282629795.
+```
+
+Click `ctrl-d` (or `ctrl-z` on Windows) to finish sending messages to the topic.
+
+Consume one message from the topic:
+
+```bash
+rpk topic consume twitch_chat --num 1
+```
+
+Each message is shown with its metadata, like this:
+
+```json
+{
+  "topic": "twitch_chat",
+  "value": "Pandas are fabulous!",
+  "timestamp": 1663282629795,
+  "partition": 0,
+  "offset": 0
+}
+```
+
+You can delete your topic by running:
+
+```bash
+rpk topic delete twitch_chat
+```
+
+Output:
+
+```text
+TOPIC       STATUS
+twitch_chat  OK
+```
+
+## Next steps
+- [Deploying for Production](../../../deploy/deployment-option/self-hosted/manual/production/production-deployment)
+
+## Suggested reading
+
+- [Which Kafka clients does Redpanda support?](../../../develop/kafka-clients)
+- [Example on how to setup Redpanda with NodeJS](../../../develop/guide-nodejs)

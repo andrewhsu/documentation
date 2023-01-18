@@ -1,0 +1,32 @@
+---
+title: Deploy Manually
+---
+
+<head>
+    <meta name="title" content="Deploy Manually | Redpanda Docs"/>
+    <meta name="description" content="Deploy Manually."/>
+</head>
+
+- [Deploy for Production](../manual/production/production-deployment)
+  
+    You can use `rpm` to set up a production cluster of Redpanda using the default deployment or writing a custom deployment script.
+
+- [Automate Deployment for Production](../manual/production/production-deployment-automation)
+  
+    You can use automation tools in your environment, such as Terraform and Ansible to deploy Redpanda for production.
+
+- [Configure Node Properties](../manual/node-property-configuration)
+
+    When you install Redpanda, a `redpanda.yaml` file is installed on each node in `/etc/redpanda`. This file contains node configuration properties. A node property is one that can be set differently from node to node, such as `data_directory` or `node_id` (when specified).
+
+- [High Availability](../manual/high-availability)
+
+    Redpanda is designed to ensure data integrity and high availability (HA), even at high-throughput levels. This section explains the trade-offs with different configurations.
+
+- [Sizing Use Cases](../manual/sizing-use-cases)
+  
+    The following scenarios provide estimates and advice for sizing Redpanda clusters for different throughput and retention use cases in your data center and in the cloud.
+
+- [Sizing Guidelines](../manual/sizing)
+
+    For best performance, size your Redpanda cluster to handle the volume of data being produced, replicated, and consumed.

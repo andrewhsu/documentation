@@ -54,7 +54,7 @@ module.exports = {
     prism: {
       theme: lightCodeTheme,
       darkTheme: darkCodeTheme,
-      additionalLanguages: ['bash', 'docker', 'yaml','docker','powershell','git', 'ini', 'properties', 'javascript']
+      additionalLanguages: ['bash', 'docker', 'yaml','docker','powershell','git', 'ini', 'properties', 'javascript', 'python']
     },
     algolia: {
       // The application ID provided by Algolia
@@ -103,6 +103,28 @@ module.exports = {
         },
         sitemap: {
           changefreq: 'weekly',
+        },
+      },
+    ],
+    [
+      'redocusaurus',
+      {
+        // Plugin Options for loading OpenAPI files
+        specs: [
+          {
+            spec: 'static/api/pandaproxy-schema-registry.json',
+            route: '/docs/api/pandaproxy-schema-registry',
+          },
+          {
+            spec: 'static/api/pandaproxy-rest.json',
+            route: '/docs/api/pandaproxy-rest',
+          },
+        ],
+        // Theme Options for modifying how redoc renders them
+        theme: {
+          options: {
+            hideDownloadButton: true,
+          },
         },
       },
     ],

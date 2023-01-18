@@ -413,6 +413,10 @@ html[data-theme='dark'] .button--secondary {
   color: var(--v-white);
 }
 
+.table-of-contents {
+  word-wrap: normal;
+}
+
 .table-of-contents__link--active {
   border-left: 2px solid var(--v-red);
   padding-left: 1rem;

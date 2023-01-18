@@ -1,0 +1,84 @@
+---
+title: Manage
+---
+
+<head>
+    <meta name="title" content="Manage | Redpanda Docs"/>
+    <meta name="description" content="Manage Redpanda."/>
+</head>
+
+- [Kubernetes](../manage/kubernetes)
+  - [Helm Configuration](../manage/kubernetes/helm-configuration)
+
+  - [Rack Awareness](../manage/kubernetes/kubernetes-rack-awareness)
+
+      Rack awareness allows you to distribute replicas of the same partition across different racks to minimize data loss in the event of a rack failure. A rack is a failure zone that has one or more Redpanda brokers assigned to it.
+
+  - [Security](../manage/kubernetes/security)
+
+    - [Configure TLS on Kubernetes](../manage/kubernetes/security/kubernetes-tls)
+
+        Redpanda supports Transport Layer Security (TLS) encryption in Kubernetes. For certificate management, the Redpanda Helm chart uses cert-manager with either a self-signed Issuer or your own custom Issuer.
+
+    - [Configure SASL on Kubernetes](../manage/kubernetes/security/sasl-kubernetes)
+
+        Simple Authentication and Security Layer (SASL) is a method for adding authentication support to connection-based protocols. When using the Redpanda Helm chart, SASL provides authentication between the server and client. To encrypt communication, use TLS encryption. You must use TLS encryption to have secure authentication using SASL.
+
+  - [Configure Storage](../manage/kubernetes/configure-storage)
+
+- [Cluster Maintenance](../manage/cluster-maintenance)
+  - [Cluster Balancing](../manage/cluster-maintenance/cluster-balancing)
+
+      When a topic is created, Redpanda evenly distributes its partitions by sequentially allocating them to the node with the least number of partitions. By default, Redpanda provides leadership balancing and partition rebalancing when nodes are added or decommissioned. 
+
+  - [Continuous Data Balancing](../manage/cluster-maintenance/continuous-data-balancing)
+
+      Continuous Data Balancing continuously monitors your node and rack availability and disk usage. This enables self-healing clusters that dynamically balance partitions, ensuring smooth operations and optimal cluster performance. 
+
+  - [Rolling Upgrades](../manage/cluster-maintenance/rolling-upgrade)
+
+      One of the primary uses for maintenance mode is to perform a rolling upgrade on each node in the cluster. This process involves putting a node into maintenance mode, upgrading the node, taking the node out of maintenance mode, and then repeating the process on the next node in the cluster. Placing nodes into maintenance mode ensures a smooth upgrade of your cluster while reducing the risk of interruption or degradation in service.
+
+  - [Manage Disk Space](../manage/cluster-maintenance/disk-utilization)
+
+      Redpanda provides several ways to manage disk space to ensure the production stability of the cluster.
+
+  - [Cluster Properties](../manage/cluster-maintenance/cluster-property-configuration)
+
+      When you install Redpanda software, it automatically generates a cluster configuration with default settings assigned to each cluster property. 
+      You might want to change some of the default settings, particularly if you plan to use features such as rack awareness or tiered storage, which are disabled by default.
+
+- [Security](../manage/security)
+  - [Configure Authentication](../manage/security/authentication)
+    
+    Different components of Redpanda support different authentication methods. You can configure multiple listeners with `redpanda.yaml`, and with each listener, you can configure the `authentication_method` and optionally TLS or mTLS.
+
+  - [Configure Authorization](../manage/security/authorization)
+    
+    Authorization works in tandem with [authentication](../manage/security/authentication). Access-control lists (ACLs) provide a way to configure fine-grained access to provisioned users. ACLs work with SASL/SCRAM and with mTLS with principal mapping for authentication. 
+
+  - [Configure Encryption](../manage/security/encryption)
+    
+    By default, Redpanda data is sent unencrypted. A security best practice is to enable encryption with TLS or mTLS. 
+
+  - [IAM Roles](../manage/security/iam-roles)
+
+    For self-hosted clusters deployed on a public cloud platform, cloud provider IAM roles provide a safer alternative to the less secure static credential system, which is based on access keys. With static credentials, the access key and secret key are stored in plaintext in the configuration file.
+
+  - [Redpanda Console Security](../manage/security/console)
+    - [GitHub SSO Setup](../manage/security/console/github)
+
+      Integrating Redpanda Console with GitHub allows your users to use their GitHub identities to sign-in to Console.
+
+    - [Google SSO Setup](../manage/security/console/google)
+
+      Integrating Redpanda Console with Google allows your users to use their Google identities to sign in to Console.
+
+    - [Okta SSO Setup](../manage/security/console/okta)
+
+      Integrating Redpanda Console with Okta allows your users to use their Okta identities to sign in to Redpanda Console.
+
+    - [Generic OIDC](../manage/security/console/generic-oidc)
+
+      If you would like to integrate an OpenID Connect (OIDC) compatible identity provider that is not yet natively supported in Console,
+      you can configure the generic OIDC provider.

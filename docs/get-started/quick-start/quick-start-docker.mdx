@@ -1,0 +1,332 @@
+---
+title: Redpanda Quickstart on Docker
+---
+
+<head>
+    <meta name="title" content="Redpanda Quickstart on Docker | Redpanda Docs"/>
+    <meta name="description" content="Redpanda Quickstart on Docker."/>
+</head>
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+You can only run Redpanda directly on Linux. However, you can use Docker to run Redpanda on any system supported by Docker. This guide helps you get started with Redpanda for develop and testing.
+
+See also: [Deploying for Production](../../../deploy/deployment-option/self-hosted/manual/production/production-deployment).
+
+## Run directly from Docker repository
+
+The [Docker image for Redpanda](https://hub.docker.com/r/vectorized/redpanda) is hosted in Docker Hub.
+
+To get a cluster ready for streaming, either run a single Docker container with Redpanda running, or run a cluster of three containers.
+
+## Set up a one-node cluster
+
+With a one-node cluster, you can test a simple implementation of Redpanda.
+
+```bash
+docker run -d --pull=always --name=redpanda-1 --rm \
+-p 8081:8081 \
+-p 8082:8082 \
+-p 9092:9092 \
+-p 9644:9644 \
+docker.redpanda.com/vectorized/redpanda:latest \
+redpanda start \
+--overprovisioned \
+--seeds "redpanda-1:33145" \
+--set redpanda.empty_seed_starts_cluster=false \
+--smp 1  \
+--memory 1G \
+--reserve-memory 0M \
+--check=false \
+--advertise-rpc-addr redpanda-1:33145
+```
+
+:::note Notes
+- `--overprovisioned` - accommodates Docker resource limitations
+- `--pull=always` - makes sure that you're always working with the latest version
+:::
+
+Now you can point your [Kafka-compatible client](../../../develop/kafka-clients) to 127.0.0.1:9092.
+
+### Clean up a one-node cluster
+
+When you're finished with the cluster, shut down and delete the container:
+
+```bash
+docker stop redpanda-1 \
+docker rm redpanda-1
+```
+
+## Set up a three-node cluster
+
+To test the interaction between nodes in a cluster, set up a Docker network with three containers in a cluster.
+
+### Create network and persistent volumes
+
+Set up a bridge network, so the Redpanda instances can communicate with each other
+but still allow for the Kafka API to be available on the localhost.
+You also create the persistent volumes that let the Redpanda instances keep state during instance restarts.
+
+```bash
+docker network create -d bridge redpandanet && \
+docker volume create redpanda1 && \
+docker volume create redpanda2 && \
+docker volume create redpanda3
+```
+
+### Start Redpanda
+
+Start the nodes for the Redpanda cluster:
+
+```bash
+docker run -d \
+--pull=always \
+--name=redpanda-1 \
+--hostname=redpanda-1 \
+--net=redpandanet \
+-p 8081:8081 \
+-p 8082:8082 \
+-p 9092:9092 \
+-p 9644:9644 \
+-v "redpanda1:/var/lib/redpanda/data" \
+docker.redpanda.com/vectorized/redpanda redpanda start \
+--smp 1  \
+--memory 1G  \
+--reserve-memory 0M \
+--overprovisioned \
+--set redpanda.empty_seed_starts_cluster=false \
+--seeds "redpanda-1:33145" \
+--check=false \
+--pandaproxy-addr INSIDE://0.0.0.0:28082,OUTSIDE://0.0.0.0:8082 \
+--advertise-pandaproxy-addr INSIDE://redpanda-1:28082,OUTSIDE://localhost:8082 \
+--kafka-addr INSIDE://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092 \
+--advertise-kafka-addr INSIDE://redpanda-1:29092,OUTSIDE://localhost:9092 \
+--rpc-addr 0.0.0.0:33145 \
+--advertise-rpc-addr redpanda-1:33145 && \
+
+docker run -d \
+--pull=always \
+--name=redpanda-2 \
+--hostname=redpanda-2 \
+--net=redpandanet \
+-p 8083:8083 \
+-p 9093:9093 \
+-v "redpanda2:/var/lib/redpanda/data" \
+docker.redpanda.com/vectorized/redpanda redpanda start \
+--smp 1  \
+--memory 1G  \
+--reserve-memory 0M \
+--overprovisioned \
+--set redpanda.empty_seed_starts_cluster=false \
+--seeds "redpanda-1:33145" \
+--check=false \
+--pandaproxy-addr INSIDE://0.0.0.0:28083,OUTSIDE://0.0.0.0:8083 \
+--advertise-pandaproxy-addr INSIDE://redpanda-2:28083,OUTSIDE://localhost:8083 \
+--kafka-addr INSIDE://0.0.0.0:29093,OUTSIDE://0.0.0.0:9093 \
+--advertise-kafka-addr INSIDE://redpanda-2:29093,OUTSIDE://localhost:9093 \
+--rpc-addr 0.0.0.0:33146 \
+--advertise-rpc-addr redpanda-2:33146 && \
+
+docker run -d \
+--pull=always \
+--name=redpanda-3 \
+--hostname=redpanda-3 \
+--net=redpandanet \
+-p 8084:8084 \
+-p 9094:9094 \
+-v "redpanda3:/var/lib/redpanda/data" \
+docker.redpanda.com/vectorized/redpanda redpanda start \
+--smp 1  \
+--memory 1G  \
+--reserve-memory 0M \
+--overprovisioned \
+--set redpanda.empty_seed_starts_cluster=false \
+--seeds "redpanda-1:33145" \
+--check=false \
+--pandaproxy-addr INSIDE://0.0.0.0:28084,OUTSIDE://0.0.0.0:8084 \
+--advertise-pandaproxy-addr INSIDE://redpanda-3:28084,OUTSIDE://localhost:8084 \
+--kafka-addr INSIDE://0.0.0.0:29094,OUTSIDE://0.0.0.0:9094 \
+--advertise-kafka-addr INSIDE://redpanda-3:29094,OUTSIDE://localhost:9094 \
+--rpc-addr 0.0.0.0:33147 \
+--advertise-rpc-addr redpanda-3:33147
+```
+
+Now you can run `rpk` on one of the containers to interact with the cluster:
+
+```bash
+docker exec -it redpanda-1 rpk cluster info
+```
+
+Or as a separate container in the same network:
+
+```bash
+docker run --net redpandanet docker.vectorized.io/vectorized/redpanda cluster info --brokers=redpanda-1:29092
+```
+
+The output of the status command looks similar to the following:
+
+```bash
+BROKERS
+=======
+ID    HOST        PORT
+0*    redpanda-1  29092
+1     redpanda-2  29093
+2     redpanda-3  29094
+```
+
+### Clean up a three-node cluster
+
+When you're finished with the cluster, shut down and delete the containers:
+
+```bash
+docker stop redpanda-1 redpanda-2 redpanda-3 && \
+docker rm redpanda-1 redpanda-2 redpanda-3
+```
+
+If you set up volumes and a network, delete them:
+
+```bash
+docker volume rm redpanda1 redpanda2 redpanda3 && \
+docker network rm redpandanet
+```
+
+## Run with Docker Compose
+
+Another way to spin up a Redpanda cluster is with a `docker-compose` file.
+
+Copy this code, and save it as `docker-compose.yml`:
+
+```yaml
+version: '3.7'
+services:
+  redpanda:
+    # NOTE: Use the latest version here!
+    image: docker.redpanda.com/vectorized/redpanda:latest
+    container_name: redpanda-1
+    command:
+    - redpanda
+    - start
+    - --smp
+    - '1'
+    - --reserve-memory
+    - 0M
+    - --overprovisioned
+    - --set redpanda.empty_seed_starts_cluster=false
+    - --seeds "redpanda-1:33145"
+    - --kafka-addr
+    - PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+    - --advertise-kafka-addr
+    - PLAINTEXT://redpanda:29092,OUTSIDE://localhost:9092
+    - --pandaproxy-addr
+    - PLAINTEXT://0.0.0.0:28082,OUTSIDE://0.0.0.0:8082
+    - --advertise-pandaproxy-addr
+    - PLAINTEXT://redpanda:28082,OUTSIDE://localhost:8082
+    - --advertise-rpc-addr redpanda-1:33145
+    ports:
+    - 8081:8081
+    - 8082:8082
+    - 9092:9092
+    - 28082:28082
+    - 29092:29092
+```
+
+### Start up with Docker Compose
+
+In the directory where the file is saved, run:
+
+```bash
+docker-compose up -d
+```
+
+To change the parameters, edit the `docker-compose` file, and run the command again.
+
+### Clean up with Docker Compose
+
+When you're finished with the cluster, stop and remove the containers: 
+
+```bash
+docker-compose down
+```
+
+## Start Streaming
+
+`rpk` is a CLI tool you can use to work with your Redpanda nodes. Refer to [rpk Commands](../../../reference/rpk/rpk-topic) for more information about `rpk`.
+
+Here are some sample commands to produce and consume streams:
+
+Create a topic called `twitch_chat`:
+
+```bash
+docker exec -it redpanda-1 \
+rpk topic create twitch_chat --brokers=localhost:9092
+```
+
+Output:
+
+```text
+TOPIC       STATUS
+twitch_chat  OK
+```
+
+Produce a message into the topic:
+
+```bash
+docker exec -it redpanda-1 \
+rpk topic produce twitch_chat --brokers=localhost:9092
+```
+
+Enter a message:
+
+```text
+Pandas are fabulous!
+```
+
+Output:
+
+```text
+Produced to partition 0 at offset 0 with timestamp 1663282629789.
+```
+
+Click `ctrl-d` (or `ctrl-z` on Windows) to finish sending messages to the topic.
+
+Consume one message from the topic:
+
+```bash
+docker exec -it redpanda-1 \
+rpk topic consume twitch_chat --num 1 --brokers=localhost:9092
+```
+
+Each message is shown with its metadata, like this:
+
+```json
+{
+  "topic": "twitch_chat",
+  "value": "Pandas are fabulous!",
+  "timestamp": 1663282629789,
+  "partition": 0,
+  "offset": 0
+}
+```
+
+You can delete your topic by running:
+
+```bash
+docker exec -it redpanda-1 \
+rpk topic delete twitch_chat --brokers=localhost:9092
+```
+
+Output:
+
+```text
+TOPIC       STATUS
+twitch_chat  OK
+```
+
+## Next steps
+- [Deploying for Production](../../../deploy/deployment-option/self-hosted/manual/production/production-deployment)
+
+## Suggested reading
+
+- [Which Kafka clients does Redpanda support?](../../../develop/kafka-clients)
+- [Example on how to setup Redpanda with NodeJS](../../../develop/guide-nodejs)

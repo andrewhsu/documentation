@@ -1,0 +1,19 @@
+---
+title: Produce Data
+---
+
+<head>
+    <meta name="title" content="Produce Data | Redpanda Docs"/>
+    <meta name="description" content="Produce Data to Redpanda."/>
+</head>
+
+- [Configure Producers](../produce-data/configure-producers)
+
+    Along with brokers, topics, and consumers, producers are one of the essential
+    components of a Redpanda deployment. Within streaming applications, producers
+    are responsible for sending data to brokers, where the data is stored in topics made
+    up of partitions.
+
+- [Idempotent Producers](../produce-data/idempotent-producers)
+
+    When a producer writes messages to a topic, each message should be recorded only once in the order in which it was sent. However, network issues such as a connection failure can result in a timeout, which prevents a write request from succeeding. Idempotent producers prevent this problem by assigning a unique ID to every write request.

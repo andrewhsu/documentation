@@ -1,0 +1,61 @@
+---
+title: Self-Hosted Deployment
+---
+
+<head>
+    <meta name="title" content="Deploy Manually | Redpanda Docs"/>
+    <meta name="description" content="Deploy Manually."/>
+</head>
+
+
+- [Kubernetes](../self-hosted/kubernetes)
+  - [Kubernetes Cluster Requirements](../self-hosted/kubernetes/kubernetes-cluster-requirements)
+
+      This topic is a checklist with the prerequisites and system requirements for installing production Redpanda in a Kubernetes cluster using the Helm chart.
+
+  - [Kubernetes Production Deployment](../self-hosted/kubernetes/kubernetes-production-deployment)
+
+      Redpanda offers two tools for deploying Redpanda clusters in Kubernetes:
+
+      - Redpanda Helm chart (recommended)
+      - Redpanda Operator (not recommended for new deployments)
+
+      Redpanda recommends the Helm chart for all new deployments.
+      As a result, the Kubernetes documentation in this section is for Helm chart deployments.
+
+  - [Best Practices](../self-hosted/kubernetes/kubernetes-best-practices)
+
+      This topic explains Redpanda's tips and recommendations for Kubernetes deployments.
+
+  - [Tune Worker Nodes](../self-hosted/kubernetes/kubernetes-tune-workers)
+
+      To get the best performance from your hardware, set Redpanda to production mode on each worker node and run the auto-tuning tool. The auto-tuning tool identifies the hardware configuration on your worker node and optimizes the Linux kernel to give you the best performance.
+
+  - [Deploy Redpanda](../self-hosted/kubernetes/kubernetes-deploy)
+
+      This topic describes how to use the Redpanda Helm chart to deploy a Redpanda cluster in Kubernetes.
+
+- [Manual](../self-hosted/manual)
+  - [Deploy for Production](../self-hosted/manual/production/production-deployment)
+    
+      You can use `rpm` to setup a production cluster of Redpanda using our default deployment or writing a custom deployment script.
+
+  - [Automate Deployment for Production](../self-hosted/manual/production/production-deployment-automation)
+    
+      You can use automation tools in your environment such as Terraform and Ansible to deploy Redpanda for production.
+
+  - [Configure Node Properties](../self-hosted/manual/node-property-configuration)
+
+      When you install Redpanda, a `redpanda.yaml` file is installed on each node in `/etc/redpanda`. This file contains node configuration properties. A node property is one that can be set differently from node to node, such as `data_directory` or `node_id` (when specified).
+
+  - [High Availability](../self-hosted/manual/high-availability)
+
+      Redpanda is designed to ensure data integrity and high availability (HA), even at high-throughput levels. This section explains the trade-offs with different configurations.
+
+  - [Sizing Use Cases](../self-hosted/manual/sizing-use-cases)
+    
+      The following scenarios provide estimates and advice for sizing Redpanda clusters for different throughput and retention use cases in your data center and in the cloud.
+
+  - [Sizing Guidelines](../self-hosted/manual/sizing)
+
+      For the best performance, size your Redpanda cluster to handle the volume of data being produced, replicated, and consumed.

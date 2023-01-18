@@ -1,0 +1,67 @@
+---
+title: Kubernetes Production Cluster Requirements
+tags:
+  - Kubernetes
+---
+
+<head>
+    <meta name="title" content="Kubernetes Cluster Requirements for Redpanda in Production | Redpanda Docs"/>
+    <meta name="description" content="A list of requirements and recommendations for provisioning Kubernetes cluster and worker nodes for running Redpanda in production."/>
+</head>
+
+import Versions from '../../../../shared/versions.mdx'
+
+This topic is a checklist with the prerequisites and system requirements for installing production Redpanda in a Kubernetes cluster using the Helm chart.
+
+## Operating system
+
+Minimum required version of the Linux kernel: <Versions name="linux-kernel"/>
+
+## Kubernetes
+
+Minimum required Kubernetes version: <Versions name="kubernetes"/>
+
+Make sure to do the following:
+
+1. [Install kubectl](https://kubernetes.io/docs/tasks/tools/).
+
+1. [Configure the `kubeconfig` file for your cluster](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/).
+
+## Helm
+
+Minimum required Helm version: <Versions name="helm"/>
+
+[Install Helm](https://helm.sh/docs/intro/install/).
+
+## Storage volumes
+
+Redpanda brokers must store their data on disk. As a result, each Pod that runs a Redpanda broker must have its own storage volume.
+
+To learn what Redpanda recommends, see the [storage best practices](../kubernetes-best-practices#storage).
+
+To learn how to configure storage, see [Configure storage](../../../../../manage/kubernetes/configure-storage).
+
+## External networking
+
+For external access, each worker node in your cluster must have a static, externally accessible IP address to allow clients to connect to the NodePort Service and access the Redpanda broker.
+Redpanda uses the following default ports:
+
+| Node port | Pod port | Purpose |
+|---|---|---|
+| 30081 | 8080 | Schema registry |
+| 30082 | 8083 | HTTP proxy |
+| 31092 | 9094 | Kafka API |
+| 31644 | 9644 | Admin API |
+
+Redpanda recommends using NodePorts instead of Loadbalancers. See the [external networking best practices](../kubernetes-best-practices#external-networking).
+
+## Tuning
+
+Each worker node that runs Redpanda must be tuned to optimize the Linux kernel for running Redpanda in production.
+
+See [Tuning Kubernetes Worker Nodes for Production](../kubernetes-tune-workers)
+
+## Next steps
+
+[Review the best practices](../kubernetes-best-practices).
+

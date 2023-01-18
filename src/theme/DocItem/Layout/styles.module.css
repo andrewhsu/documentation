@@ -5,7 +5,7 @@
 
 @media (min-width: 997px) {
   .docItemCol {
-    max-width: 75% !important;
+    max-width: 100% !important;
   }
 }
 
@@ -30,4 +30,163 @@
   .reportIssueText {
     text-align: right;
   }
+}
+
+.feedBackSection {
+  color: var(--ifm-link-color);
+}
+
+.thumbsUpSeparator {
+  margin-right: 15px;
+}
+
+.modal {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: var(--font);
+  font-size: 14px;
+}
+
+.modalContent {
+  width: 500px;
+  background-color: var(--ifm-background-color);
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+}
+
+.modalHeader {
+  padding: 20px;
+  padding-bottom: 10px;
+}
+
+.modalFooter {
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 10px;
+}
+
+.modalTitle {
+  margin: 0;
+}
+
+.modalBody {
+  padding: 20px;
+  padding-top: 12px;
+}
+
+/* Removes button style */
+button,
+input[type="submit"],
+input[type="reset"] {
+  background: none;
+  color: inherit;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+}
+
+input[type="radio"] {
+  -ms-transform: scale(1.5); /* IE 9 */
+  -webkit-transform: scale(1.5); /* Chrome, Safari, Opera */
+  transform: scale(1.5);
+}
+
+input[type="radio"] {
+  /* remove standard background appearance */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  /* create custom radiobutton appearance */
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  padding: 2px;
+  /* background-color only for content */
+  background-clip: content-box;
+  border: 2px solid #bbbbbb;
+  background-color: #e7e6e7;
+  border-radius: 50%;
+}
+
+/* appearance for checked radiobutton */
+input[type="radio"]:checked {
+  background-color: var(--ifm-link-color);
+  border: 2px solid var(--ifm-link-color);
+}
+
+.labelMargin {
+  margin: 1rem;
+}
+
+textarea {
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  padding: 7px;
+  width: 400px;
+  max-width: 400px;
+  max-height: 800px;
+}
+
+input[type="text"] {
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  padding: 7px;
+  max-width: 400px;
+}
+
+input[type="text"]:focus {
+  background-color: var(--ifm-background-color);
+}
+
+.radioButtons {
+  margin-bottom: 15px;
+}
+
+.submitButton {
+  background-color: var(--ifm-link-color);
+  padding-right: 20px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.closeButton {
+  padding-right: 20px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  margin-left: 20px;
+  margin-top: 10px;
+}
+
+.boxSizing {
+  max-width: 400px;
+  width: 400px;
+}
+
+.padding {
+  padding-top: 15px;
+}
+
+.feedbackSubmited {
+  text-align: center;
+  font-size: 20px;
+}
+
+.feedbackSubmitedIcon {
+  color: green;
+  font-size: 150px !important;
+}
+
+.moreQuestions {
+  width: 400px;
+  background-color: var(--v-gray3);
 }

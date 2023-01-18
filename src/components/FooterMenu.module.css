@@ -1,0 +1,42 @@
+div.MenuContainer {
+    padding: 2rem;
+    background: #F9FAFB;
+}
+
+ul.MenuList {
+    padding: 0;
+    list-style-type: none;
+}
+
+li.MenuListItem {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+a.MenuListItemLink {
+    color: var(--ifm-font-color-base);
+    font-weight: 400;
+}
+
+.FooterMenuHeader img {
+    margin-right: 1rem;
+}
+
+.FooterMenuHeader img.default {
+    width: 1.3rem;
+    height: 1.3rem;
+}
+
+.FooterMenuHeader img.wider {
+    width: 1.6rem;
+    height: 1rem;
+}
+
+.FooterMenuHeader img.higher {
+    width: 1rem;
+    height: 1.3rem;
+}
+
+.FooterMenuHeader h3 {
+    display: inline-block;
+}

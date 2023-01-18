@@ -1,0 +1,154 @@
+---
+title: Best Practices for Redpanda in Kubernetes
+tags:
+  - Kubernetes
+---
+
+<head>
+    <meta name="title" content="Best Practices for Redpanda in Kubernetes | Redpanda Docs"/>
+    <meta name="description" content="Understand what Redpanda recommends for Kubernetes deployments and why."/>
+</head>
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+This topic explains Redpanda's tips and recommendations for Kubernetes deployments.
+
+## Overriding Helm chart defaults
+
+Redpanda recommends creating separate YAML files for each configuration block that you need to override in the Helm chart. The Redpanda documentation follows this best practice.
+This way, it's clearer to understand what you've overridden from the `helm` command.
+For example, if you override the `storage.persistentVolume.storageClass` configuration in a file called `custom-storage-class.yaml`,
+the `helm` command might look something like the following:
+
+```bash
+helm upgrade --install redpanda redpanda/redpanda \
+    --namespace redpanda --create-namespace \
+    --values custom-storage-class.yaml
+```
+
+The `custom-storage-class.yaml` filename gives you a hint about how the Helm chart has been customized.
+
+You can pass more than one `--values` option in the same command. For example, if you also wanted to override the TLS configuration, you could put those overrides in a separate file called `enable-tls.yaml` and run the following:
+
+```bash
+helm upgrade --install redpanda redpanda/redpanda \
+    --namespace redpanda --create-namespace \
+    --values custom-storage-class.yaml
+    --values enable-tls.yaml
+```
+
+
+## Storage
+
+Redpanda recommends using PersistentVolumes that are backed by NVMe SSD disks.
+For scalability, it's best to use a StorageClass with a dynamic provisioner. 
+Dynamic provisioners make it easier to scale your Redpanda clusters because they provision new volumes when new Redpanda brokers are added to the cluster.
+Without a dynamic provisioner, you would need to create each PersistentVolume manually in order to bind it to the corresponding PersistentVolumeClaim.
+
+PersistentVolumes should be one of the following types:
+
+| **PersistentVolume** | **Description** | **Best Use** |
+|-----------------------|--------------------------------------------------------|------|
+|   [Local](#local-persistentvolumes) (recommended) |   Storage is located on the worker node   |   High throughput and low latency  |
+|   [Remote](#remote-storage) |   Storage is mounted to the node through the network |  High availability   | 
+
+Local PersistentVolumes can be accessed only by the worker nodes to which they are physically connected. To delay the binding of the PersistentVolumeClaim until the Pod is scheduled, set `volumeBindingMode` to `WaitForFirstConsumer` on the StorageClass.
+
+PersistentVolumeClaims are not deleted when Redpanda brokers are removed from a cluster.
+It is your responsibility to delete PersistentVolumeClaims when they are no longer needed.
+As a result, it's important to consider your volume’s reclaim policy when creating your StorageClass:
+
+- `Delete` - The volume is deleted when you delete the PersistentVolumeClaim.
+- `Reclaim` - The volume is not deleted when you delete the PersistentVolumeClaim, allowing you to reclaim it with a new PersistentVolumeClaim.
+
+Learn [how to configure storage in the Helm chart](../../../../../manage/kubernetes/configure-storage).
+
+### Local PersistentVolumes
+
+Local PersistentVolumes store Redpanda data on a local disk that's attached to the worker node. Redpanda reads and writes data faster on a local disk.
+However, local disks are tied to the lifecycle of the worker node.
+If the worker node fails for any reason, you may lose access to the Redpanda data.
+
+Because Redpanda uses the Raft protocol to replicate data, it is safe to store data on local disks as long as your Redpanda cluster consists of the following:
+
+- At least three brokers
+- Topics configured with a replication factor of at least 3
+
+This way, even if a worker node fails and you lose its local disk, the data still exists on at least two other worker nodes.
+
+:::tip
+For greater reliability, Redpanda recommends enabling [rack awareness](../../../../../manage/kubernetes/kubernetes-rack-awareness) to minimize data loss in the event of a rack failure.
+:::
+
+Redpanda recommends the [Rancher Local Path Provisioner](https://github.com/rancher/local-path-provisioner), which provides a dynamic provisioner for local volumes.
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-path
+provisioner: rancher.io/local-path
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+```
+
+### Remote storage
+
+Remote storage persists data outside of the worker node so that the data is not tied to a specific worker node and it can be recovered.
+
+To avoid losing Redpanda brokers in cloud deployments, it's best to host your remote storage in the same availability zone as the Pods that are running the Redpanda brokers. This way, if an availability zone suffers an outage, any Redpanda brokers outside of that availability zone do not lose access to their remote storage and can continue running.
+
+<Tabs groupId="kubernetes-platforms">
+<TabItem value="aws" label="Amazon AWS">
+
+Redpanda recommends the `io2` or `gp3` volume types due to their performance characteristics. For details about Elastic Block Storage (EBS) volume types, see the [AWS documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html#vol-type-ssd).
+
+If you use Amazon Elastic Kubernetes Service (EKS) and you want to use EBS, make sure to install the [Amazon EBS CSI driver](https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html). This driver is required to allow EKS to create PersistentVolumes.
+
+</TabItem>
+<TabItem value="gcp" label="Google GCP">
+
+Redpanda recommends the Balance PD, Performance (PD-SSD), or Extreme PD disk types due to their performance characteristics. For details about Google persistent disks, see the [Google documentation](https://cloud.google.com/persistent-disk#section-5).
+
+</TabItem>
+</Tabs>
+
+## Worker nodes and Pod replicas
+
+Each Pod replica that runs a Redpanda broker requires its own dedicated worker node for the following reasons:
+
+- Redpanda brokers are designed to have access to all resources, such as CPU and memory, on their host machine.
+- External clients access Redpanda brokers using the address of a worker node. See [External networking](#external-networking).
+
+By default, the Helm chart deploys a StatefulSet with three Redpanda brokers. You can specify the number of Redpanda brokers in the `statefulset.replicas` configuration.
+
+## External networking
+
+Redpanda recommends using a NodePort Service to expose worker nodes and to give external clients access to the Redpanda brokers running on them.
+The NodePort Service provides the lowest latency of all the Services because it does not include any unnecessary routing or middleware.
+Client connections go to the Redpanda brokers in the most direct way possible, through the worker nodes.
+
+For security reasons, you may not want to expose worker nodes directly to clients using a NodePort Service.
+If you choose to use another Service, consider the impact on the cost and performance of your deployment:
+
+- LoadBalancer Service - To make each Redpanda broker accessible with LoadBalancer Services, you need one for each Redpanda broker so that requests can be routed to specific brokers rather than balancing requests across all brokers. Load balancers are expensive, add latency and occasional packet loss, and add an unnecessary layer of complexity.
+
+- Ingress - To make each Redpanda broker accessible with Ingress, you need to run an Ingress controller and set up routing to each Redpanda broker. Routing adds latency and can be a throughput bottleneck.
+
+## Security
+
+To protect your Kubernetes cluster, do the following:
+
+- Deploy Redpanda in a separate namespace to protect your data from other resources in your Kubernetes cluster.
+
+  ```bash
+  kubectl create namespace redpanda
+  ```
+
+- If you're using a cloud platform, use [IAM roles](../../../../../manage/security/iam-roles) to restrict access to resources in your cluster.
+
+To protect your Redpanda cluster, enable and configure the following security features in the Helm chart:
+
+- [Authentication through SASL](../../../../../manage/kubernetes/security/sasl-kubernetes)
+- [Network encryption through TLS](../../../../../manage/kubernetes/security/kubernetes-tls)

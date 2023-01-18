@@ -1,0 +1,104 @@
+---
+title: Configure Redpanda SASL in Kubernetes
+tags:
+  - Kubernetes
+  - Helm configuration
+---
+
+<head>
+    <meta name="title" content="Configure Redpanda SASL in Kubernetes | Redpanda Docs"/>
+    <meta name="description" content="Configuring Redpanda SASL in Kubernetes."/>
+</head>
+
+Simple Authentication and Security Layer (SASL) is a method for adding authentication support to connection-based protocols. When using the Redpanda Helm chart, SASL provides authentication between the server and client. To encrypt communication, use TLS encryption. You must use TLS encryption to have secure authentication using SASL.
+
+:::note
+This page uses the recommended Redpanda Helm chart for configuring SASL. For information about using the `redpanda-operator` Helm chart (supported for backward compatibility), see [Redpanda Operator](../../../../reference/redpanda-operator).
+:::
+
+## Enable SASL
+
+Create a YAML file containing the values to override from the defaults:
+
+```yaml title="sasl-enable.yaml"
+auth:
+  sasl:
+    enabled: true
+    users:
+      - name: admin
+        password: changeme
+```
+
+:::note
+In this YAML document, `users` is a list of superusers.
+:::
+
+During install or upgrade, enable SASL configuration:
+
+```bash
+helm upgrade --install redpanda redpanda/redpanda -n redpanda --create-namespace \
+  --values sasl-enable.yaml
+```
+
+## Create users
+
+Create users (not superusers) and set passwords for the new users. By default, these users don't have any permissions on the cluster.
+
+:::tip
+As a security best practice, superusers should not run commands on the cluster. Instead, have these additional or new users interact with the cluster.
+:::
+
+To create the user `myuser` with a password `changethispassword`, run:
+
+```bash
+kubectl exec -n redpanda -c redpanda redpanda-0 -- \
+  rpk acl user create myuser -p changethispassword
+```
+
+## Grant permissions
+
+The superuser can grant permissions to additional users through access control lists ([ACLs](../../../security/authorization/#ACLs)). For details on how ACLs function in Redpanda, see [rpk acl](../../../../reference/rpk/rpk-acl).
+
+1. Use the superuser to grant `create` and `describe` permissions to another user for the cluster. Edit the `rpk acl create` command to grant permissions to specific users or groups:
+
+  ```bash
+  kubectl exec -n redpanda -c redpanda redpanda-0 -- \
+    rpk acl create --allow-principal User:myuser \
+    --operation create,describe \
+    --cluster \
+    --user admin --password changeme --sasl-mechanism SCRAM-SHA-256
+  ```
+
+2. Optionally, you can use the superuser to grant permissions to a new user for a topic. The following command grants `describe` privileges to a topic:
+
+  ```bash
+  kubectl exec -n redpanda -c redpanda redpanda-0 -- \
+    rpk acl create --allow-principal User:myuser \
+    --operation describe \
+    --topic myfirsttopic \
+    --user admin --password changeme --sasl-mechanism SCRAM-SHA-256
+  ```
+
+:::note
+If a user has `describe` privileges on a cluster, it does not mean that user is automatically granted `describe` privileges on topics.
+:::
+
+## Use rpk to interact with Redpanda
+
+Connect to Redpanda with the additional (non-superuser) user and start working with the cluster.
+
+To create a topic:
+
+```bash
+kubectl exec -n redpanda -c redpanda redpanda-0 -- \
+  rpk topic create myfirsttopic \
+  --user myuser --password changethispassword --sasl-mechanism SCRAM-SHA-256
+```
+
+To describe the topic:
+
+```bash
+kubectl exec -n redpanda -c redpanda <cluster_name>-0 -- \
+  rpk topic describe myfirsttopic \
+  --user myuser --password changethispassword --sasl-mechanism SCRAM-SHA-256
+```

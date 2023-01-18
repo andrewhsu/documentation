@@ -37,10 +37,7 @@ function DocSidebarDesktop({path, sidebar, onCollapse, isHidden}) {
         </div>
 
         {!(
-              useLocation().pathname.includes("/docs/cloud")||
-              useLocation().pathname.includes("/docs/home/cloud")||
-              useLocation().pathname == "/docs/home/" ||
-              useLocation().pathname == "/docs/home" 
+              useLocation().pathname.includes("/docs/platform/deployment/cloud")
               ) && (
           <div className={styles.topPanelVersionContainer}>
             <label>Version:</label>

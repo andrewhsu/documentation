@@ -1,0 +1,17 @@
+---
+title: Security on Kubernetes
+---
+
+<head>
+    <meta name="title" content="Security on Kubernetes | Redpanda Docs"/>
+    <meta name="description" content="Security on Kubernetes."/>
+</head>
+
+
+- [Configure TLS on Kubernetes](../security/kubernetes-tls)
+
+    Redpanda supports Transport Layer Security (TLS) encryption in Kubernetes. For certificate management, the Redpanda Helm chart uses cert-manager with either a self-signed Issuer or your own custom Issuer.
+
+- [Configure SASL on Kubernetes](../security/sasl-kubernetes)
+
+    Simple Authentication and Security Layer (SASL) is a method for adding authentication support to connection-based protocols. When using the Redpanda Helm chart, SASL provides authentication between the server and client. To encrypt communication, use TLS encryption. You must use TLS encryption to have secure authentication using SASL.

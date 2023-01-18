@@ -14,255 +14,260 @@ module.exports = {
   docsSidebar: [
     {
       type: "doc",
-      label: "Docs home",
+      label: "Docs Home",
       id: "home/index",
     },
     {
-      type: "doc",
-      label: "Redpanda Platform",
-      id: "home/platform/index",
-    },
-    {
       type: "category",
-      label: "Introduction",
-      link: { type: "doc", id: "platform/introduction/index" },
-      collapsible: true,
-      collapsed: true,
+      label: "Get Started",
+      link: { type: "doc", id: "get-started/index" },
       items: [
         {
           type: "doc",
-          label: "Introduction to Events and Streaming",
-          id: "platform/introduction/intro-to-events",
+          label: "Introduction to Redpanda",
+          id: "get-started/intro-to-events",
         },
         {
           type: "doc",
-          label: "Designed for Performance",
-          id: "platform/introduction/autotune",
+          label: "How Redpanda Works",
+          id: "get-started/architecture",
         },
-        "platform/introduction/licenses",
-      ],
-    },
-    {
-      type: "category",
-      label: "Install and Upgrade",
-      link: { type: "doc", id: "platform/install-upgrade/index" },
-      collapsible: true,
-      collapsed: true,
-      items: [
+        {
+          type: "doc",
+          label: "Redpanda Licensing",
+          id: "get-started/licenses",
+        },
         {
           type: "category",
-          label: "Install Redpanda",
-          collapsible: true,
-          collapsed: true,
-          link: { type: "doc", id: "platform/quickstart/index" },
+          label: "Redpanda Quickstart",
+          link: { type: "doc", id: "get-started/quick-start/index" },
           items: [
             {
               type: "doc",
               label: "Docker",
-              id: "platform/quickstart/quick-start-docker",
-            },
-            {
-              type: "doc",
-              label: "Kubernetes",
-              id: "platform/quickstart/kubernetes-qs-dev",
+              id: "get-started/quick-start/quick-start-docker",
             },
             {
               type: "doc",
               label: "Linux",
-              id: "platform/quickstart/quick-start-linux",
+              id: "get-started/quick-start/quick-start-linux",
             },
             {
               type: "doc",
               label: "macOS",
-              id: "platform/quickstart/quick-start-macos",
+              id: "get-started/quick-start/quick-start-macos",
             },
             {
               type: "doc",
-              label: "Windows",
-              id: "platform/quickstart/quick-start-windows",
+              label: "Kubernetes",
+              id: "get-started/quick-start/kubernetes-qs-dev",
             },
-          ],
+            {
+              type: "doc",
+              label: "Introduction to Redpanda Console",
+              id: "get-started/quick-start/quick-start-console",
+            },
+          ]
         },
         {
           type: "doc",
-          label: "Install rpk",
-          id: "platform/quickstart/rpk-install",
-        },
-        "platform/quickstart/console-installation",
-        {
-          type: "doc",
-          label: "Start Streaming",
-          id: "platform/install-upgrade/start-streaming",
+          label: "Introduction to rpk",
+          id: "get-started/rpk-install",
         },
         {
           type: "doc",
-          label: "Version Upgrade",
-          id: "platform/install-upgrade/version-upgrade",
-        },
-        {
-          type: "doc",
-          label: "Rolling Upgrades",
-          id: "platform/install-upgrade/rolling-upgrade",
+          label: "Build a Sample Application",
+          id: "get-started/code-examples",
         },
       ],
     },
+    {
+      type: "category",
+      label: "Develop",
+      link: { type: "doc", id: "develop/index" },
+      
+      
+      items: [
+        {
+          type: "doc",
+          label: "Supported Kafka Clients",
+          id: "develop/kafka-clients",
+        },
+        "develop/code-examples",
+        "develop/guide-nodejs",
+        "develop/http-proxy",
+        {
+          type: "category",
+          label: "Produce Data",
+          link: { type: "doc", id: "develop/produce-data/index" },
+          items: [
+            "develop/produce-data/configure-producers",
+            {
+              type: "doc",
+              label: "Idempotent Producers",
+              id: "develop/produce-data/idempotent-producers",
+            },
+          ]
+        },
+        {
+          type: "category",
+          label: "Consume Data",
+          link: { type: "doc", id: "develop/consume-data/index" },
+          items: [
+            {
+              type: "doc",
+              label: "Consumer Offsets",
+              id: "develop/consume-data/consumer-offsets",
+            },
+          ]
+        },
+        "develop/transactions",
+      ],
+    },
+    {
+      type: "category",
+      label: "Deploy",
+      link: { type: "doc", id: "deploy/index" },
+      items: [
+        {
+          type: "category",
+          label: " Choose a Deployment Option",
+          link: { type: "doc", id: "deploy/deployment-option/index" },
+          items: [
+            {
+              type: "category",
+              label: "Self-Hosted",
+              link: { type: "doc", id: "deploy/deployment-option/self-hosted/index" },
+              items: [
+                {
+                  type: "category",
+                  label: "Kubernetes",
+                  link: { type: "doc", id: "deploy/deployment-option/self-hosted/kubernetes/index" },
+                  items: [
+                    {
+                      type: "doc",
+                      label: "Kubernetes Cluster Requirements",
+                      id: "deploy/deployment-option/self-hosted/kubernetes/kubernetes-cluster-requirements",
+                    },
+                    {
+                      type: "doc",
+                      label: "Kubernetes Production Deployment",
+                      id: "deploy/deployment-option/self-hosted/kubernetes/kubernetes-production-deployment",
+                    },
+                    {
+                      type: "doc",
+                      label: "Best Practices",
+                      id: "deploy/deployment-option/self-hosted/kubernetes/kubernetes-best-practices",
+                    },
+                    {
+                      type: "doc",
+                      label: "Tune Worker Nodes",
+                      id: "deploy/deployment-option/self-hosted/kubernetes/kubernetes-tune-workers",
+                    },
+                    {
+                      type: "doc",
+                      label: "Deploy Redpanda",
+                      id: "deploy/deployment-option/self-hosted/kubernetes/kubernetes-deploy",
+                    },
+                  ]
+                },
+                {
+                  type: "category",
+                  label: "Manual",
+                  link: { type: "doc", id: "deploy/deployment-option/self-hosted/manual/index" },
+                  items: [
+                    {
+                    type: "category",
+                  label: "Production Deployment",
+                  link: { type: "doc", id: "deploy/deployment-option/self-hosted/manual/production/index" },
+                  items: [
+                    {
+                      type: "doc",
+                      label: "Deploy for Production",
+                      id: "deploy/deployment-option/self-hosted/manual/production/production-deployment",
+                    },
+                    {
+                      type: "doc",
+                      label: "Automate Deployment for Production",
+                      id: "deploy/deployment-option/self-hosted/manual/production/production-deployment-automation",
+                    },
+                  ]
+                },
+                    "deploy/deployment-option/self-hosted/manual/node-property-configuration",
+                    {
+                      type: "doc",
+                      label: "High Availability",
+                      id: "deploy/deployment-option/self-hosted/manual/high-availability",
+                    },
+                    {
+                      type: "doc",
+                      label: "Sizing Use Cases",
+                      id: "deploy/deployment-option/self-hosted/manual/sizing-use-cases",
+                    },
+                    {
+                      type: "doc",
+                      label: "Sizing Guidelines",
+                      id: "deploy/deployment-option/self-hosted/manual/sizing",
+                    },
+                  ]
+                },
+              ]
+            },
+            {
+              type: "category",
+              label: "Cloud",
+              link: { type: "doc", id: "deploy/deployment-option/cloud/index" },
+              items: [
+                {
+                  type: "doc",
+                  label: "Redpanda Cloud Overview",
+                  id: "deploy/deployment-option/cloud/dedicated-byoc",
+                },
+                {
+                  type: "category",
+                  label: "Redpanda Dedicated",
 
-    {
-      type: "category",
-      label: "Deployment",
-      collapsible: true,
-      link: { type: "doc", id: "platform/deployment/index" },
-      collapsed: true,
-      items: [
-        "platform/deployment/production-deployment-automation",
-        {
-          type: "category",
-          label: "Performance and storage tuning",
-          items: [
-            "platform/deployment/disk-utilization",
-            "platform/deployment/io-optimization",
-          ],
-        },
-        {
-          type: "doc",
-          label: "Deploying for Production",
-          id: "platform/deployment/production-deployment",
-        },
-        {
-          type: "doc",
-          label: "Writing Custom Deployment",
-          id: "platform/deployment/custom-deployment",
-        },
-      ],
-    },
-    {
-      type: "category",
-      label: "Cluster Administration",
-      link: { type: "doc", id: "platform/cluster-administration/index" },
-      collapsible: true,
-      collapsed: true,
-      items: [
-        {
-          type: "category",
-          label: "Configuration",
-          link: {
-            type: "doc",
-            id: "platform/cluster-administration/configuration",
-          },
-          items: [
-            {
-              type: "doc",
-              label: "Configuring Cluster Properties",
-              id: "platform/cluster-administration/cluster-property-configuration",
-            },
-            {
-              type: "doc",
-              label: "Configuring Node Properties",
-              id: "platform/cluster-administration/node-property-configuration",
-            },
-            "platform/cluster-administration/listener-configuration",
-          ],
-        },
-        {
-          type: "category",
-          label: "Cluster balancing",
-          collapsible: true,
-          collapsed: true,
-          link: {
-            type: "doc",
-            id: "platform/cluster-administration/cluster-balancing",
-          },
-          items: [
-            {
-              type: "doc",
-              label: "Configuring Continuous Data Balancing",
-              id: "platform/cluster-administration/continuous-data-balancing",
-            },
-          ],
-        },
-        {
-          type: "doc",
-          label: "Node Maintenance Mode",
-          id: "platform/cluster-administration/node-management",
-        },
-        "platform/cluster-administration/monitoring",
-      ],
-    },
-    {
-      type: "category",
-      label: "Data Management",
-      link: { type: "doc", id: "platform/data-management/index" },
-      collapsible: true,
-      collapsed: true,
-      items: [
-        {
-          type: "category",
-          label: "Tiered Storage",
-          collapsible: true,
-          collapsed: true,
-          link: {
-            type: "doc",
-            id: "platform/data-management/tiered-storage",
-          },
-          items: [
-            {
-              type: "doc",
-              label: "Data Archiving",
-              id: "platform/data-management/data-archiving",
-            },
-          ],
-        },
-        "platform/data-management/remote-read-replicas",
-        "platform/data-management/data-migration",
-        "platform/data-management/rack-awareness",
-      ],
-    },
-    {
-      type: "category",
-      label: "Development",
-      link: { type: "doc", id: "platform/development/index" },
-      collapsible: true,
-      collapsed: true,
-      items: [
-        {
-          type: "doc",
-          label: "Kafka clients",
-          id: "platform/development/kafka-clients",
-        },
-        "platform/development/code-examples",
-        "platform/development/guide-nodejs",
-        "platform/development/consumer-offsets",
-        "platform/development/idempotent-producers",
-        "platform/development/transactions",
-        "platform/development/http-proxy",
-      ],
-    },
-    {
-      type: "category",
-      label: "Security",
-      link: { type: "doc", id: "platform/security/index" },
-      collapsible: true,
-      collapsed: true,
-      items: [
-        "platform/security/encryption",
-        "platform/security/authentication",
-        "platform/security/authorization",
-        "platform/security/iam-roles",
-        {
-          type: "category",
-          label: "Security on Kubernetes",
-          collapsible: true,
-          collapsed: true,
-          items: [
-            {
-              type: "doc",
-              label: "Configuring TLS on Kubernetes",
-              id: "platform/security/kubernetes-tls",
-            },
-            {
-              type: "doc",
-              label: "Configuring SASL on Kubernetes",
-              id: "platform/security/sasl-kubernetes",
+                  items: [
+                    {
+                      type: "doc",
+                      label: "Create Clusters",
+                      id: "deploy/deployment-option/cloud/create-dedicated-cloud-cluster-aws",
+                    },
+                    {
+                      type: "doc",
+                      label: "VPC Peering",
+                      id: "deploy/deployment-option/cloud/vpc-peering",
+                    },
+                  ],
+                },
+                {
+                  type: "doc",
+                  label: "Create a BYOC Cluster on AWS",
+                  id: "deploy/deployment-option/cloud/create-byoc-cluster-aws",
+                },
+                {
+                  type: "doc",
+                  label: "Create a BYOC Cluster on GCP",
+                  id: "deploy/deployment-option/cloud/create-byoc-cluster-gcp",
+                },
+                {
+                  type: "doc",
+                  label: "Create a Topic",
+                  id: "deploy/deployment-option/cloud/create-topic",
+                },
+                {
+                  type: "category",
+                  label: "Managed Connectors",
+                  link: { type: "doc", id: "deploy/deployment-option/cloud/managed-connectors/index" },  
+                  items: [
+                    {
+                      type: "doc",
+                      label: "Create an S3 Sink Connector",
+                      id: "deploy/deployment-option/cloud/managed-connectors/create-s3-sink-connector",
+                    },
+                  ],
+                },
+              ]
             },
           ],
         },
@@ -270,120 +275,216 @@ module.exports = {
     },
     {
       type: "category",
-      label: "Redpanda Console",
-      link: { type: "doc", id: "platform/console/index" },
-      collapsible: true,
-      collapsed: true,
+      label: "Manage",
+      link: { type: "doc", id: "manage/index" },
       items: [
-        {
-          type: "category",
-          label: "Features",
-          items: [
-            "platform/console/features/kafka-connect",
-            "platform/console/features/record-deserialization",
-            "platform/console/features/schema-registry",
-            "platform/console/features/protobuf",
-            "platform/console/features/topic-documentation",
-            "platform/console/features/programmable-push-filters",
-            "platform/console/features/http-path-rewrites",
-          ],
-        },
-        {
-          type: "category",
-          label: "Single Sign On",
-          items: [
-            {
-              type: "doc",
-              label: "Authentication",
-              id: "platform/console/single-sign-on/authentication",
-            },
-            {
-              type: "doc",
-              label: "Authorization",
-              id: "platform/console/single-sign-on/authorization",
-            },
-            {
-              type: "doc",
-              label: "GitHub",
-              id: "platform/console/single-sign-on/identity-providers/github",
-            },
-            {
-              type: "doc",
-              label: "Google",
-              id: "platform/console/single-sign-on/identity-providers/google",
-            },
-            {
-              type: "doc",
-              label: "Okta",
-              id: "platform/console/single-sign-on/identity-providers/okta",
-            },
-            {
-              type: "doc",
-              label: "Generic OIDC",
-              id: "platform/console/single-sign-on/identity-providers/generic-oidc",
-            },
-          ],
-        },
-        {
-          type: "category",
-          label: "Reference",
-          items: [
-            {
-              type: "doc",
-              label: "Redpanda Console Configuration",
-              id: "platform/console/reference/config",
-            },
-            {
-              type: "doc",
-              label: "Redpanda Console Role-Binding Configuration",
-              id: "platform/console/reference/role-bindings",
-            },
-            {
-              type: "doc",
-              label: "Docker Compose Configuration",
-              id: "platform/console/reference/docker-compose",
-            },
-          ],
-        },
-      ],
+              {
+                type: "category",
+                label: "Kubernetes",
+                link: { type: "doc", id: "manage/kubernetes/index" },
+                items: [
+                  {
+                    type: "doc",
+                    label: "Helm Configuration",
+                    id: "manage/kubernetes/helm-configuration",
+                  },
+                  {
+                    type: "doc",
+                    label: "Rack Awareness",
+                    id: "manage/kubernetes/kubernetes-rack-awareness",
+                  },
+                  {
+                    type: "category",
+                    label: "Security",
+                    link: { type: "doc", id: "manage/kubernetes/security/index" },
+                    items: [
+                      {
+                        type: "doc",
+                        label: "Configure TLS on Kubernetes",
+                        id: "manage/kubernetes/security/kubernetes-tls",
+                      },
+                      {
+                        type: "doc",
+                        label: "Configure SASL on Kubernetes",
+                        id: "manage/kubernetes/security/sasl-kubernetes",
+                      },
+                    ],
+                  },
+                  {
+                    type: "doc",
+                    label: "Configure Storage",
+                    id: "manage/kubernetes/configure-storage",
+                  },
+                ],
+              },
+              {
+                type: "category",
+                label: "Cluster Maintenance",
+                link: { type: "doc", id: "manage/cluster-maintenance/index" },
+                items: [
+                  "manage/cluster-maintenance/cluster-balancing",
+                  {
+                    type: "doc",
+                    label: "Continuous Data Balancing",
+                    id: "manage/cluster-maintenance/continuous-data-balancing",
+                  },
+                  {
+                    type: "doc",
+                    label: "Rolling Upgrades",
+                    id: "manage/cluster-maintenance/rolling-upgrade",
+                  },
+                  "manage/cluster-maintenance/disk-utilization",
+                  {
+                    type: "doc",
+                    label: "Cluster Properties",
+                    id: "manage/cluster-maintenance/cluster-property-configuration",
+                  },  
+                ]
+              },
+              
+              {
+                type: "category",
+                label: "Security",
+                link: { type: "doc", id: "manage/security/index" },
+                
+                
+                items: [
+                  {
+                    "type": "doc",
+                    "label": "Authentication",
+                    "id": "manage/security/authentication"
+                  },
+                  {
+                    "type": "doc",
+                    "label": "Authorization",
+                    "id": "manage/security/authorization"
+                  },
+                  "manage/security/encryption",
+                  "manage/security/listener-configuration",
+                  {
+                    "type": "category",
+                    "label": "Redpanda Console Security",
+                    link: { type: "doc", id: "manage/security/console/index" },
+                    "items": [
+                      {
+                        "type": "doc",
+                        "label": "Authentication",
+                        "id": "manage/security/console/authentication"
+                      },
+                      {
+                        "type": "doc",
+                        "label": "Authorization",
+                        "id": "manage/security/console/authorization"
+                      },
+                      {
+                        "type": "doc",
+                        "label": "GitHub",
+                        "id": "manage/security/console/github"
+                      },
+                      {
+                        "type": "doc",
+                        "label": "Google",
+                        "id": "manage/security/console/google"
+                      },
+                      {
+                        "type": "doc",
+                        "label": "Okta",
+                        "id": "manage/security/console/okta"
+                      },
+                      {
+                        "type": "doc",
+                        "label": "Generic OIDC",
+                        "id": "manage/security/console/generic-oidc"
+                      }
+                    ]
+                  },
+                  "manage/security/iam-roles",
+                ],
+              },
+              {
+                type: "category",
+                label: "Tiered Storage",
+                
+                
+                link: {
+                  type: "doc",
+                  id: "manage/tiered-storage",
+                },
+                items: [
+                  {
+                    type: "doc",
+                    label: "Data Archiving",
+                    id: "manage/data-archiving",
+                  },
+                ],
+              },
+              "manage/schema-registry",
+              {
+                type: "category",
+                label: "Redpanda Console",
+                link: { type: "doc", id: "manage/console/index" },
+                items: [
+                  "manage/console/kafka-connect",
+                  "manage/console/schema-registry",
+                  "manage/console/protobuf",
+                  "manage/console/topic-documentation",
+                  "manage/console/http-path-rewrites",
+                ]
+              },
+              {
+                type: "doc",
+                label: "Node Maintenance Mode",
+                id: "manage/node-management",
+              },
+              "manage/data-migration",
+              {
+                type: "doc",
+                label: "Rack Awareness",
+                id: "manage/rack-awareness",
+              },
+              "manage/remote-read-replicas",
+              "manage/monitoring",
+              "manage/io-optimization",
+            ],
     },
     {
       type: "category",
       label: "Reference",
-      link: { type: "doc", id: "platform/reference/index" },
-      collapsible: true,
-      collapsed: true,
+      link: { type: "doc", id: "reference/index" },
+      
+      
       items: [
-        "platform/reference/cluster-properties",
-        "platform/reference/tunable-properties",
-        "platform/reference/node-properties",
-        "platform/reference/node-configuration-sample",
+        "reference/cluster-properties",
+        "reference/tunable-properties",
+        "reference/node-properties",
+        "reference/node-configuration-sample",
+        "reference/api-reference",
         {
           type: "category",
           label: "rpk Commands",
-          link: { type: "doc", id: "platform/reference/rpk/index" },
+          link: { type: "doc", id: "reference/rpk/index" },
           items: [
-            "platform/reference/rpk/rpk-commands",
+            "reference/rpk/rpk-commands",
             {
               type: "category",
               label: "rpk acl",
-              link: { type: "doc", id: "platform/reference/rpk/rpk-acl/rpk-acl" },
+              link: { type: "doc", id: "reference/rpk/rpk-acl/rpk-acl" },
               items: [
-                "platform/reference/rpk/rpk-acl/rpk-acl",
-                "platform/reference/rpk/rpk-acl/rpk-acl-create",
-                "platform/reference/rpk/rpk-acl/rpk-acl-delete",
+                "reference/rpk/rpk-acl/rpk-acl",
+                "reference/rpk/rpk-acl/rpk-acl-create",
+                "reference/rpk/rpk-acl/rpk-acl-delete",
                 {
                   type: "category",
                   label: "rpk acl user",
                   link: {
                     type: "doc",
-                    id: "platform/reference/rpk/rpk-acl/rpk-acl-user",
+                    id: "reference/rpk/rpk-acl/rpk-acl-user",
                   },
                   items: [
-                    "platform/reference/rpk/rpk-acl/rpk-acl-user",
-                    "platform/reference/rpk/rpk-acl/rpk-acl-user-create",
-                    "platform/reference/rpk/rpk-acl/rpk-acl-user-delete",
-                    "platform/reference/rpk/rpk-acl/rpk-acl-user-list",
+                    "reference/rpk/rpk-acl/rpk-acl-user",
+                    "reference/rpk/rpk-acl/rpk-acl-user-create",
+                    "reference/rpk/rpk-acl/rpk-acl-user-delete",
+                    "reference/rpk/rpk-acl/rpk-acl-user-list",
                   ],
                 }, //acl user
               ],
@@ -393,15 +494,15 @@ module.exports = {
               label: "rpk cloud",
               link: {
                 type: "doc",
-                id: "platform/reference/rpk/rpk-cloud/rpk-cloud",
+                id: "reference/rpk/rpk-cloud/rpk-cloud",
               },
               items: [
-                "platform/reference/rpk/rpk-cloud/rpk-cloud",
-                "platform/reference/rpk/rpk-cloud/rpk-cloud-byoc",
-                "platform/reference/rpk/rpk-cloud/rpk-cloud-byoc-install",
-                "platform/reference/rpk/rpk-cloud/rpk-cloud-byoc-uninstall",
-                "platform/reference/rpk/rpk-cloud/rpk-cloud-login",
-                "platform/reference/rpk/rpk-cloud/rpk-cloud-logout"
+                "reference/rpk/rpk-cloud/rpk-cloud",
+                "reference/rpk/rpk-cloud/rpk-cloud-byoc",
+                "reference/rpk/rpk-cloud/rpk-cloud-byoc-install",
+                "reference/rpk/rpk-cloud/rpk-cloud-byoc-uninstall",
+                "reference/rpk/rpk-cloud/rpk-cloud-login",
+                "reference/rpk/rpk-cloud/rpk-cloud-logout"
               ]
             },
             {
@@ -409,7 +510,7 @@ module.exports = {
               label: "rpk cluster",
               link: {
                 type: "doc",
-                id: "platform/reference/rpk/rpk-cluster/rpk-cluster",
+                id: "reference/rpk/rpk-cluster/rpk-cluster",
               },
               items: [
                 {
@@ -417,32 +518,32 @@ module.exports = {
                   label: "rpk cluster config",
                   link: {
                     type: "doc",
-                    id: "platform/reference/rpk/rpk-cluster/rpk-cluster-config",
+                    id: "reference/rpk/rpk-cluster/rpk-cluster-config",
                   },
                   items: [
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-config",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-config-edit",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-config-export",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-config-force-reset",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-config-get",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-config-import",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-config-lint",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-config-set",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-config-status",
+                    "reference/rpk/rpk-cluster/rpk-cluster-config",
+                    "reference/rpk/rpk-cluster/rpk-cluster-config-edit",
+                    "reference/rpk/rpk-cluster/rpk-cluster-config-export",
+                    "reference/rpk/rpk-cluster/rpk-cluster-config-force-reset",
+                    "reference/rpk/rpk-cluster/rpk-cluster-config-get",
+                    "reference/rpk/rpk-cluster/rpk-cluster-config-import",
+                    "reference/rpk/rpk-cluster/rpk-cluster-config-lint",
+                    "reference/rpk/rpk-cluster/rpk-cluster-config-set",
+                    "reference/rpk/rpk-cluster/rpk-cluster-config-status",
                   ],
                 },
-                "platform/reference/rpk/rpk-cluster/rpk-cluster-health",
+                "reference/rpk/rpk-cluster/rpk-cluster-health",
                 {
                   type: "category",
                   label: "rpk cluster license",
                   link: {
                     type: "doc",
-                    id: "platform/reference/rpk/rpk-cluster/rpk-cluster-license",
+                    id: "reference/rpk/rpk-cluster/rpk-cluster-license",
                   },
                   items: [
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-license",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-license-info",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-license-set",
+                    "reference/rpk/rpk-cluster/rpk-cluster-license",
+                    "reference/rpk/rpk-cluster/rpk-cluster-license-info",
+                    "reference/rpk/rpk-cluster/rpk-cluster-license-set",
                   ],
                 },
                 {
@@ -450,11 +551,11 @@ module.exports = {
                   label: "rpk cluster logdirs",
                   link: {
                     type: "doc",
-                    id: "platform/reference/rpk/rpk-cluster/rpk-cluster-logdirs",
+                    id: "reference/rpk/rpk-cluster/rpk-cluster-logdirs",
                   },
                   items: [
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-logdirs",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-logdirs-describe",
+                    "reference/rpk/rpk-cluster/rpk-cluster-logdirs",
+                    "reference/rpk/rpk-cluster/rpk-cluster-logdirs-describe",
                   ],
                 },
                 {
@@ -462,27 +563,27 @@ module.exports = {
                   label: "rpk cluster maintenance",
                   link: {
                     type: "doc",
-                    id: "platform/reference/rpk/rpk-cluster/rpk-cluster-maintenance",
+                    id: "reference/rpk/rpk-cluster/rpk-cluster-maintenance",
                   },
                   items: [
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-maintenance",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-maintenance-disable",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-maintenance-enable",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-maintenance-status",
+                    "reference/rpk/rpk-cluster/rpk-cluster-maintenance",
+                    "reference/rpk/rpk-cluster/rpk-cluster-maintenance-disable",
+                    "reference/rpk/rpk-cluster/rpk-cluster-maintenance-enable",
+                    "reference/rpk/rpk-cluster/rpk-cluster-maintenance-status",
                   ],
                 },
-                "platform/reference/rpk/rpk-cluster/rpk-cluster-metadata",
+                "reference/rpk/rpk-cluster/rpk-cluster-metadata",
                 {
                   type: "category",
                   label: "rpk cluster partitions",
                   link: {
                     type: "doc",
-                    id: "platform/reference/rpk/rpk-cluster/rpk-cluster-partitions",
+                    id: "reference/rpk/rpk-cluster/rpk-cluster-partitions",
                   },
                   items: [
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-partitions",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-partitions-balancer-status",
-                    "platform/reference/rpk/rpk-cluster/rpk-cluster-partitions-movement-cancel",
+                    "reference/rpk/rpk-cluster/rpk-cluster-partitions",
+                    "reference/rpk/rpk-cluster/rpk-cluster-partitions-balancer-status",
+                    "reference/rpk/rpk-cluster/rpk-cluster-partitions-movement-cancel",
                   ],
                 },
               ],
@@ -492,13 +593,13 @@ module.exports = {
               label: "rpk container",
               link: {
                 type: "doc",
-                id: "platform/reference/rpk/rpk-container/rpk-container",
+                id: "reference/rpk/rpk-container/rpk-container",
               },
               items: [
-                "platform/reference/rpk/rpk-container/rpk-container",
-                "platform/reference/rpk/rpk-container/rpk-container-purge",
-                "platform/reference/rpk/rpk-container/rpk-container-start",
-                "platform/reference/rpk/rpk-container/rpk-container-stop",
+                "reference/rpk/rpk-container/rpk-container",
+                "reference/rpk/rpk-container/rpk-container-purge",
+                "reference/rpk/rpk-container/rpk-container-start",
+                "reference/rpk/rpk-container/rpk-container-stop",
               ],
             },
             {
@@ -506,11 +607,11 @@ module.exports = {
               label: "rpk debug",
               link: {
                 type: "doc",
-                id: "platform/reference/rpk/rpk-debug/rpk-debug",
+                id: "reference/rpk/rpk-debug/rpk-debug",
               },
               items: [
-                "platform/reference/rpk/rpk-debug/rpk-debug",
-                "platform/reference/rpk/rpk-debug/rpk-debug-bundle",
+                "reference/rpk/rpk-debug/rpk-debug",
+                "reference/rpk/rpk-debug/rpk-debug-bundle",
               ],
             },
             {
@@ -518,13 +619,13 @@ module.exports = {
               label: "rpk generate",
               link: {
                 type: "doc",
-                id: "platform/reference/rpk/rpk-generate/rpk-generate",
+                id: "reference/rpk/rpk-generate/rpk-generate",
               },
               items: [
-                "platform/reference/rpk/rpk-generate/rpk-generate",
-                "platform/reference/rpk/rpk-generate/rpk-generate-grafana-dashboard",
-                "platform/reference/rpk/rpk-generate/rpk-generate-prometheus-config",
-                "platform/reference/rpk/rpk-generate/rpk-generate-shell-completion",
+                "reference/rpk/rpk-generate/rpk-generate",
+                "reference/rpk/rpk-generate/rpk-generate-grafana-dashboard",
+                "reference/rpk/rpk-generate/rpk-generate-prometheus-config",
+                "reference/rpk/rpk-generate/rpk-generate-shell-completion",
               ],
             },
             {
@@ -532,30 +633,30 @@ module.exports = {
               label: "rpk group",
               link: {
                 type: "doc",
-                id: "platform/reference/rpk/rpk-group/rpk-group",
+                id: "reference/rpk/rpk-group/rpk-group",
               },
               items: [
-                "platform/reference/rpk/rpk-group/rpk-group",
-                "platform/reference/rpk/rpk-group/rpk-group-delete",
-                "platform/reference/rpk/rpk-group/rpk-group-describe",
-                "platform/reference/rpk/rpk-group/rpk-group-list",
-                "platform/reference/rpk/rpk-group/rpk-group-seek",
+                "reference/rpk/rpk-group/rpk-group",
+                "reference/rpk/rpk-group/rpk-group-delete",
+                "reference/rpk/rpk-group/rpk-group-describe",
+                "reference/rpk/rpk-group/rpk-group-list",
+                "reference/rpk/rpk-group/rpk-group-seek",
               ],
             },
-            "platform/reference/rpk/rpk-help",
-            "platform/reference/rpk/rpk-iotune",
+            "reference/rpk/rpk-help",
+            "reference/rpk/rpk-iotune",
             {
               type: "category",
               label: "rpk plugin",
               link: {
                 type: "doc",
-                id: "platform/reference/rpk/rpk-plugin/rpk-plugin",
+                id: "reference/rpk/rpk-plugin/rpk-plugin",
               },
               items: [
-                "platform/reference/rpk/rpk-plugin/rpk-plugin",
-                "platform/reference/rpk/rpk-plugin/rpk-plugin-list",
-                "platform/reference/rpk/rpk-plugin/rpk-plugin-uninstall",
-                "platform/reference/rpk/rpk-plugin/rpk-plugin-install",
+                "reference/rpk/rpk-plugin/rpk-plugin",
+                "reference/rpk/rpk-plugin/rpk-plugin-list",
+                "reference/rpk/rpk-plugin/rpk-plugin-uninstall",
+                "reference/rpk/rpk-plugin/rpk-plugin-install",
               ],
             },
             {
@@ -563,31 +664,31 @@ module.exports = {
               label: "rpk redpanda",
               link: {
                 type: "doc",
-                id: "platform/reference/rpk/rpk-redpanda/rpk-redpanda",
+                id: "reference/rpk/rpk-redpanda/rpk-redpanda",
               },
               items: [
-                "platform/reference/rpk/rpk-redpanda/rpk-redpanda",
+                "reference/rpk/rpk-redpanda/rpk-redpanda",
                 {
                   type: "category",
                   label: "rpk redpanda admin",
                   link: {
                     type: "doc",
-                    id: "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin",
+                    id: "reference/rpk/rpk-redpanda/rpk-redpanda-admin",
                   },
                   items: [
-                    "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin",
+                    "reference/rpk/rpk-redpanda/rpk-redpanda-admin",
                     {
                       type: "category",
                       label: "rpk redpanda admin brokers",
                       link: {
                         type: "doc",
-                        id: "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin-brokers",
+                        id: "reference/rpk/rpk-redpanda/rpk-redpanda-admin-brokers",
                       },
                       items: [
-                        "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin-brokers",
-                        "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin-brokers-decommission",
-                        "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin-brokers-list",
-                        "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin-brokers-recommission",
+                        "reference/rpk/rpk-redpanda/rpk-redpanda-admin-brokers",
+                        "reference/rpk/rpk-redpanda/rpk-redpanda-admin-brokers-decommission",
+                        "reference/rpk/rpk-redpanda/rpk-redpanda-admin-brokers-list",
+                        "reference/rpk/rpk-redpanda/rpk-redpanda-admin-brokers-recommission",
                       ],
                     },
                     {
@@ -595,13 +696,13 @@ module.exports = {
                       label: "rpk redpanda admin config",
                       link: {
                         type: "doc",
-                        id: "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin-config",
+                        id: "reference/rpk/rpk-redpanda/rpk-redpanda-admin-config",
                       },
                       items: [
-                        "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin-config",
-                        "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin-config-log-level-set",
-                        "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin-config-log-level",
-                        "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin-config-print",
+                        "reference/rpk/rpk-redpanda/rpk-redpanda-admin-config",
+                        "reference/rpk/rpk-redpanda/rpk-redpanda-admin-config-log-level-set",
+                        "reference/rpk/rpk-redpanda/rpk-redpanda-admin-config-log-level",
+                        "reference/rpk/rpk-redpanda/rpk-redpanda-admin-config-print",
                       ],
                     },
                     {
@@ -609,44 +710,44 @@ module.exports = {
                       label: "rpk redpanda admin partitions",
                       link: {
                         type: "doc",
-                        id: "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin-partitions",
+                        id: "reference/rpk/rpk-redpanda/rpk-redpanda-admin-partitions",
                       },
                       items: [
-                        "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin-partitions",
-                        "platform/reference/rpk/rpk-redpanda/rpk-redpanda-admin-partitions-list",
+                        "reference/rpk/rpk-redpanda/rpk-redpanda-admin-partitions",
+                        "reference/rpk/rpk-redpanda/rpk-redpanda-admin-partitions-list",
                       ],
                     },
                   ],
                 }, //rpk redpanda admin
-                "platform/reference/rpk/rpk-redpanda/rpk-redpanda-check",
+                "reference/rpk/rpk-redpanda/rpk-redpanda-check",
                 {
                   type: "category",
                   label: "rpk redpanda config",
                   link: {
                     type: "doc",
-                    id: "platform/reference/rpk/rpk-redpanda/rpk-redpanda-config",
+                    id: "reference/rpk/rpk-redpanda/rpk-redpanda-config",
                   },
                   items: [
-                    "platform/reference/rpk/rpk-redpanda/rpk-redpanda-config",
-                    "platform/reference/rpk/rpk-redpanda/rpk-redpanda-config-bootstrap",
-                    "platform/reference/rpk/rpk-redpanda/rpk-redpanda-config-init",
-                    "platform/reference/rpk/rpk-redpanda/rpk-redpanda-config-set",
+                    "reference/rpk/rpk-redpanda/rpk-redpanda-config",
+                    "reference/rpk/rpk-redpanda/rpk-redpanda-config-bootstrap",
+                    "reference/rpk/rpk-redpanda/rpk-redpanda-config-init",
+                    "reference/rpk/rpk-redpanda/rpk-redpanda-config-set",
                   ],
                 },
-                "platform/reference/rpk/rpk-redpanda/rpk-redpanda-mode",
-                "platform/reference/rpk/rpk-redpanda/rpk-redpanda-start",
-                "platform/reference/rpk/rpk-redpanda/rpk-redpanda-stop",
+                "reference/rpk/rpk-redpanda/rpk-redpanda-mode",
+                "reference/rpk/rpk-redpanda/rpk-redpanda-start",
+                "reference/rpk/rpk-redpanda/rpk-redpanda-stop",
                 {
                   type: "category",
                   label: "rpk redpanda tune",
                   link: {
                     type: "doc",
-                    id: "platform/reference/rpk/rpk-redpanda/rpk-redpanda-tune",
+                    id: "reference/rpk/rpk-redpanda/rpk-redpanda-tune",
                   },
                   items: [
-                    "platform/reference/rpk/rpk-redpanda/rpk-redpanda-tune",
-                    "platform/reference/rpk/rpk-redpanda/rpk-redpanda-tune-help",
-                    "platform/reference/rpk/rpk-redpanda/rpk-redpanda-tune-list",
+                    "reference/rpk/rpk-redpanda/rpk-redpanda-tune",
+                    "reference/rpk/rpk-redpanda/rpk-redpanda-tune-help",
+                    "reference/rpk/rpk-redpanda/rpk-redpanda-tune-list",
                   ],
                 },
               ],
@@ -654,29 +755,29 @@ module.exports = {
             {
               type: "category",
               label: "rpk topic",
-              link: { type: "doc", id: "platform/reference/rpk/rpk-topic/rpk-topic" },
+              link: { type: "doc", id: "reference/rpk/rpk-topic/rpk-topic" },
               items: [
-                "platform/reference/rpk/rpk-topic/rpk-topic",
-                "platform/reference/rpk/rpk-topic/rpk-topic-add-partitions",
-                "platform/reference/rpk/rpk-topic/rpk-topic-alter-config",
-                "platform/reference/rpk/rpk-topic/rpk-topic-consume",
-                "platform/reference/rpk/rpk-topic/rpk-topic-create",
-                "platform/reference/rpk/rpk-topic/rpk-topic-delete",
-                "platform/reference/rpk/rpk-topic/rpk-topic-describe",
-                "platform/reference/rpk/rpk-topic/rpk-topic-list",
-                "platform/reference/rpk/rpk-topic/rpk-topic-produce",
+                "reference/rpk/rpk-topic/rpk-topic",
+                "reference/rpk/rpk-topic/rpk-topic-add-partitions",
+                "reference/rpk/rpk-topic/rpk-topic-alter-config",
+                "reference/rpk/rpk-topic/rpk-topic-consume",
+                "reference/rpk/rpk-topic/rpk-topic-create",
+                "reference/rpk/rpk-topic/rpk-topic-delete",
+                "reference/rpk/rpk-topic/rpk-topic-describe",
+                "reference/rpk/rpk-topic/rpk-topic-list",
+                "reference/rpk/rpk-topic/rpk-topic-produce",
               ],
             },
-            "platform/reference/rpk/rpk-version",
+            "reference/rpk/rpk-version",
             {
               type: "category",
               label: "rpk wasm",
-              link: { type: "doc", id: "platform/reference/rpk/rpk-wasm/rpk-wasm" },
+              link: { type: "doc", id: "reference/rpk/rpk-wasm/rpk-wasm" },
               items: [
-                "platform/reference/rpk/rpk-wasm/rpk-wasm",
-                "platform/reference/rpk/rpk-wasm/rpk-wasm-deploy",
-                "platform/reference/rpk/rpk-wasm/rpk-wasm-generate",
-                "platform/reference/rpk/rpk-wasm/rpk-wasm-remove",
+                "reference/rpk/rpk-wasm/rpk-wasm",
+                "reference/rpk/rpk-wasm/rpk-wasm-deploy",
+                "reference/rpk/rpk-wasm/rpk-wasm-generate",
+                "reference/rpk/rpk-wasm/rpk-wasm-remove",
               ],
             },
           ],
@@ -684,115 +785,79 @@ module.exports = {
         {
           type: "category",
           label: "Redpanda Operator",
-          link: { type: "doc", id: "platform/reference/redpanda-operator/index" },
+          link: { type: "doc", id: "reference/redpanda-operator/index" },
           items: [
             {
               type: "category",
               label: "Install",
               items: [
-                "platform/reference/redpanda-operator/kubernetes-qs-local-access",
-                "platform/reference/redpanda-operator/kubernetes-qs-minikube",
-                "platform/reference/redpanda-operator/kubernetes-qs-cloud",
+                "reference/redpanda-operator/kubernetes-qs-local-access",
+                "reference/redpanda-operator/kubernetes-qs-minikube",
+                "reference/redpanda-operator/kubernetes-qs-cloud",
               ],
             },
             {
               type: "category",
               label: "Deploy",
               items: [
-                "platform/reference/redpanda-operator/kubernetes-connectivity",
-                "platform/reference/redpanda-operator/kubernetes-external-connect",
-                "platform/reference/redpanda-operator/kubernetes-additional-config",
-                "platform/reference/redpanda-operator/arbitrary-configuration",
+                "reference/redpanda-operator/kubernetes-connectivity",
+                "reference/redpanda-operator/kubernetes-external-connect",
+                "reference/redpanda-operator/kubernetes-additional-config",
+                "reference/redpanda-operator/arbitrary-configuration",
               ],
             },
             {
               type: "category",
               label: "Security",
               items: [
-                "platform/reference/redpanda-operator/security-kubernetes",
-                "platform/reference/redpanda-operator/tls-kubernetes",
-                "platform/reference/redpanda-operator/kubernetes-sasl",
-                "platform/reference/redpanda-operator/kubernetes-mtls",
+                "reference/redpanda-operator/security-kubernetes",
+                "reference/redpanda-operator/tls-kubernetes",
+                "reference/redpanda-operator/kubernetes-sasl",
+                "reference/redpanda-operator/kubernetes-mtls",
               ],
             },
-            "platform/reference/redpanda-operator/crd",
+            "reference/redpanda-operator/crd",
           ],
         },
-        "platform/reference/internal-metrics",
+        "reference/internal-metrics",
         {
           type: "link",
-          label: "Release notes",
+          label: "Release Notes",
           href: "https://github.com/redpanda-data/redpanda/releases",
+        },
+        {
+          type: "category",
+          label: "Redpanda Console",
+
+          items: [
+            {
+              type: "doc",
+              label: "Redpanda Console Configuration",
+              id: "reference/console/config",
+            },
+            {
+              type: "doc",
+              label: "Redpanda Console Role-Binding Configuration",
+              id: "reference/console/role-bindings",
+            },
+            {
+              type: "doc",
+              label: "Docker Compose Configuration",
+              id: "reference/console/docker-compose",
+            },
+            "reference/console/record-deserialization",
+            "reference/console/programmable-push-filters",
+          ],
         },
       ],
     },
     {
       type: "category",
       label: "Labs",
-      link: { type: "doc", id: "platform/labs/index" },
-      collapsible: true,
-      collapsed: true,
-      items: ["platform/labs/install-preview", "platform/labs/data-transform"],
-    },
-  ],
-  cloudSidebar: [
-    {
-      type: "doc",
-      label: "Docs home",
-      id: "home/index",
-    },
-    {
-      type: "doc",
-      label: "Redpanda Cloud",
-      id: "home/cloud/index",
-    },
-    {
-      type: "doc",
-      label: "Dedicated Cloud vs. BYOC",
-      id: "cloud/dedicated-byoc",
-    },
-    {
-      type: "doc",
-      label: "Creating a Dedicated Cloud Cluster on AWS",
-      id: "cloud/create-dedicated-cloud-cluster-aws",
-    },
-    {
-      type: "doc",
-      label: "Creating a BYOC Cluster on AWS",
-      id: "cloud/create-byoc-cluster-aws",
-    },
-    {
-      type: "doc",
-      label: "VPC Peering",
-      id: "cloud/vpc-peering",
-    },
-    {
-      type: "doc",
-      label: "Creating a Topic",
-      id: "cloud/create-topic",
-    },
-    {
-      type: "category",
-      label: "Managed Connectors",
-      link: { type: "doc", id: "cloud/managed-connectors/index" },
-      items: ["cloud/managed-connectors/create-s3-sink-connector"],
-    },
-  ],
-  homeSidebar: [
-    {
-      type: "doc",
-      label: "Docs home",
-      id: "home/index",
-    },
-    {
-      type: "doc",
-      label: "Redpanda Platform",
-      id: "home/platform/index",
-    },
-    {
-      type: "doc",
-      label: "Redpanda Cloud",
-      id: "home/cloud/index",
+      link: { type: "doc", id: "labs/index" },
+      
+      
+      items: ["labs/install-preview", "labs/data-transform"],
     },
   ],
 };

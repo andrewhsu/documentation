@@ -1,0 +1,323 @@
+---
+title: Monitor Redpanda
+---
+<head>
+    <meta name="title" content="Monitor Redpanda | Redpanda Docs"/>
+    <meta name="description" content="Metrics to monitor the health of your system to predict issues and optimize performance."/>
+</head>
+
+You can monitor the health of your system to optimize performance. The most useful metrics are available on `<node ip>:9644/public_metrics`, which has been available since v22.2. This section describes how to use Prometheus queries to monitor your system (for example, to check consumer group lag or Kafka producer request latency).
+
+For information about the original metrics available on `:9644/metrics`, see [Internal Metrics](../../reference/internal-metrics).
+
+## Configure Prometheus
+
+[Prometheus](https://prometheus.io/) is a systems monitoring and alerting tool. It collects and stores metrics as time-series data identified by metric name and key/value pairs. Redpanda exports Prometheus metrics on `:9644/public_metrics`. To generate the configuration on an existing Prometheus instance, run:
+
+`rpk generate prometheus-config`
+
+The output is a YAML object that you can add to the `scrape_configs` list.
+
+```yaml
+- job_name: redpanda
+  static_configs:
+  - targets:
+    - 172.31.18.239:9644
+    - 172.31.18.238:9643
+    - 172.31.18.237:9642
+  metrics_path: /public_metrics
+```
+
+When you run the command on a node where Redpanda is running, it displays other available nodes. If Redpanda is not running, you can set the flag `--seed-addr` to specify a remote Redpanda node to discover the additional ones, or set `--node-addrs` with a comma-separated list of all known cluster node addresses. For example:
+
+`rpk generate prometheus-config --job-name redpanda-metrics-test --node-addrs 172.31.18.239:9644,172.31.18.239:9643,172.31.18.239:9642`
+
+Edit the `prometheus.yml` file in the Prometheus root folder to add the Redpanda configuration under the `scrape_configs`:
+
+```yaml
+…
+scrape_configs:
+…
+- job_name: redpanda-metrics-test
+  static_configs:
+    - targets:
+        - 172.31.18.239:9644
+        - 172.31.18.239:9643
+        - 172.31.18.239:9642
+  metrics_path: /public_metrics
+…
+```
+
+The number of targets may change depending on the total running nodes.
+
+Save the configuration file, and restart Prometheus to apply changes.
+
+After you have the metrics, you can use a tool like [Grafana](https://grafana.com/oss/grafana/) to query, visualize, and generate alerts. For example, to display the total number of partitions in your cluster, run this query on Grafana:
+
+```
+ redpanda_cluster_partitions
+```
+
+To show the number of partitions for a specific topic, run:
+
+```
+count(count by (redpanda_topic, redpanda_partition)
+ (redpanda_kafka_max_offset{redpanda_topic="<topic_name>"}))
+```
+
+:::note
+* You can use this [sample Prometheus configuration file](https://github.com/prometheus/prometheus/blob/main/documentation/examples/prometheus.yml).
+* You can use `rpk` to configure Prometheus, but do not use `rpk` to generate a Grafana dashboard for `public_metrics`.
+:::
+
+## Enable statistics
+
+To identify your cluster's data, so Redpanda can monitor it and alert you to
+possible issues, set the `organization` (your company domain) and
+`cluster_id` (usually your team or project name) configuration fields. For
+example:
+
+```bash
+rpk config set organization 'vectorized.io'
+rpk config set cluster_id 'us-west-2'
+```
+
+To opt out of all metrics reporting, set `rpk.enable_usage_stats` to `false`:
+
+```bash
+rpk config set rpk.enable_usage_stats false
+```
+
+## Monitor metrics
+
+:::note
+Labels associate a metric with a Redpanda object. For example: `redpanda_kafka_request_bytes_total{redpanda_topic="topic1", redpanda_request="consume"} 100` indicates that 100 total bytes were consumed for topic1.
+:::
+
+### Cluster-level metrics
+
+| Metric | Definition | Labels | Type |
+| --- | --- | --- | --- |
+| redpanda_cluster_brokers | Number of configured brokers in the cluster (that is, the size of the cluster). | none | gauge |
+| redpanda_cluster_partitions | Number of partitions managed by the cluster. This includes partitions of the controller topic, but not replicas. | none | gauge |
+| redpanda_cluster_topics | Number of topics in the cluster. | none | gauge |
+| redpanda_cluster_unavailable_partitions | Number of unavailable partitions in the cluster (that is, partitions that lack quorum among replicants). | none | gauge |
+
+#### Cluster-level queries
+
+Brokers in a cluster
+
+    redpanda_cluster_brokers
+
+Topics in a cluster
+
+    redpanda_cluster_topics
+
+Partitions in a cluster
+
+    redpanda_cluster_partitions
+
+Unavailable partitions in a cluster
+
+    redpanda_cluster_unavailable_partitions
+
+Kafka consumer rate
+
+    sum(rate(redpanda_kafka_request_bytes_total{redpanda_request="consume"} [5m] )) by (redpanda_request)
+
+Kafka producer rate
+
+    sum(rate(redpanda_kafka_request_bytes_total{redpanda_request="produce"} [5m] )) by (redpanda_request)
+
+### Infrastructure-level metrics
+
+| Metric | Definition | Labels | Type |
+| --- | --- | --- | --- |
+| redpanda_cpu_busy_seconds_total | Total CPU busy time in seconds. | none | gauge |
+| redpanda_io_queue_total_read_ops | Total read operations passed in the queue. | class ("default" \| "compaction" \| "raft"), ioshard, mountpoint, shard | counter |
+| redpanda_io_queue_total_write_ops | Total write operations passed in the queue. | class ("default" \| "compaction" \| "raft"), ioshard, mountpoint, shard | counter |
+| redpanda_memory_allocated_memory | Allocated memory size in bytes. | shard | gauge |
+| redpanda_memory_free_memory | Free memory size in bytes. | shard | gauge |
+| redpanda_rpc_request_errors_total | Number of RPC errors. | redpanda_server ("kafka" \| "internal") | counter |
+| redpanda_rpc_request_latency_seconds | RPC latency. | redpanda_server ("kafka" \| "internal") | histogram |
+| redpanda_storage_disk_free_bytes | Disk storage bytes free. | none | counter |
+| redpanda_storage_disk_free_space_alert | Status of low storage space alert: 0-OK, 1-low space 2-degraded | none | gauge |
+| redpanda_storage_disk_total_bytes | Total size of attached storage, in bytes. | none | counter |
+| redpanda_uptime_seconds_total | Redpanda uptime in seconds. | none | gauge |
+| redpanda_uptime_seconds_total | Total CPU busy time in seconds. | none | gauge |
+| redpanda_cloud_client_not_found | Number of requests that came back empty from cloud storage. | Labels differ based on the cloud provider. | --- |
+| redpanda_cloud_client_backoff | Number of client requests that backed off. | Labels differ based on the cloud provider. | --- |
+| redpanda_cloud_storage_upload_backoff | Number of upload requests that backed off. | Labels differ based on the cloud provider. | --- |
+| redpanda_cloud_storage_download_backoff | Number of download requests that backed off. | Labels differ based on the cloud provider. | --- |
+| redpanda_cloud_client_uploads | Number of uploads to cloud storage. | Labels differ based on the cloud provider. For S3: endpoint (S3 endpoint) and region (S3 region). For Azure: endpoint (ABS endpoint) and storage_account (ABS account). | counter |
+| redpanda_cloud_client_downloads | Number of downloads from cloud storage. | Labels differ based on the cloud provider. For S3: endpoint (S3 endpoint) and region (S3 region). For Azure: endpoint (ABS endpoint) and storage_account (ABS account). | counter |
+
+#### Infrastructure-level queries
+
+Redpanda CPU
+
+    rate(redpanda_uptime_seconds_total[5m]) 
+    rate(redpanda_cpu_busy_seconds_total[5m])
+
+Redpanda memory
+
+    redpanda_memory_allocated_memory / (redpanda_memory_free_memory + redpanda_memory_allocated_memory)
+
+Redpanda disk usage
+
+    1 - (redpanda_storage_disk_free_bytes / redpanda_storage_disk_total_bytes)
+
+Redpanda I/O queue
+
+    rate(redpanda_io_queue_total_read_ops[5m]),
+    rate(redpanda_io_queue_total_write_ops[5m])
+
+Redpanda RPC latency
+
+    histogram_quantile(0.99, (sum(rate(redpanda_rpc_request_latency_seconds_bucket[5m])) by (le, provider, region, instance, namespace, pod, redpanda_server)))
+
+Redpanda RPC request rate
+
+    rate(redpanda_rpc_request_latency_seconds_count[5m])
+
+Redpanda RPC error rate
+
+    rate(redpanda_rpc_request_errors_total[5m])
+
+Cloud storage errors
+
+    rate(redpanda_cloud_storage_errors_total[5m])
+
+### Service-level metrics
+
+| Metric | Definition | Labels | Type
+| --- | --- | --- | --- |
+| redpanda_pandaproxy_request_latency_seconds | Latency of the request indicated by the label in HTTP Proxy. The measurement includes the time spent waiting for resources to become available, processing the request, and dispatching the response. | shard, operation | histogram |
+| redpanda_schema_registry_request_errors_total | Total number of Schema Registry server errors. | redpanda_status ("5xx" \| "4xx" \| "3xx") | counter |
+| redpanda_schema_registry_request_latency_seconds | Latency of the request indicated by the label in the Schema Registry. The measurement includes the time spent waiting for resources to become available, processing the request, and dispatching the response. | none | histogram |
+
+#### Service-level queries
+
+Schema Registry request latency
+
+    histogram_quantile(0.99, (sum(rate(redpanda_schema_registry_request_latency_seconds_bucket[5m])) by (le, provider, region, instance, namespace, pod)))
+
+Schema Registry request rate
+
+    rate(redpanda_schema_registry_request_latency_seconds_count[5m]) + sum without(redpanda_status)(rate(redpanda_schema_registry_request_errors_total[5m]))
+
+Schema Registry request error rate
+
+    rate(redpanda_schema_registry_request_errors_total[5m])
+
+### Partition-level metrics
+
+| Metric | Definition | Labels | Type
+| --- | --- | --- | --- |
+| redpanda_kafka_max_offset | Latest committed offset for the partition (that is, the offset of the last message safely persisted on most replicas). | redpanda_namespace, redpanda_topic, redpanda_partition | gauge |
+| redpanda_kafka_under_replicated_replicas | Number of under-replicated replicas for the partition (that is, replicas that are live but are not at the latest offset.) | redpanda_namespace, redpanda_topic, redpanda_partition | gauge |
+
+#### Partition-level queries
+
+Max offset
+
+    redpanda_kafka_max_offset
+
+Under-replicated replicas
+
+    redpanda_kafka_under_replicated_replicas > 0
+
+### Topic-level metrics
+
+| Metric | Definition | Labels | Type
+| --- | --- | --- | --- |
+| redpanda_kafka_replicas | Number of configured replicas per topic. | redpanda_namespace, redpanda_topic | gauge |
+| redpanda_kafka_request_bytes_total | Total number of bytes produced or consumed per topic. | redpanda_namespace, redpanda_topic, redpanda_request ("produce" \| "consume") | counter |
+
+#### Topic-level queries
+
+Kafka consumer rate
+
+    sum by(redpanda_namespace,redpanda_topic)(rate(redpanda_kafka_request_bytes_total{redpanda_request="consume"}[5m]))
+
+Kafka producer rate
+
+    sum by(redpanda_namespace,redpanda_topic)(rate(redpanda_kafka_request_bytes_total{redpanda_request="produce"}[5m]))
+
+Partition count
+
+    sum(group(redpanda_kafka_max_offset) by (redpanda_namespace, redpanda_topic, redpanda_partition, redpanda_topic)) by (redpanda_namespace, redpanda_topic)
+
+### Broker-level metrics
+
+| Metric | Definition | Labels | Type
+| --- | --- | --- | --- |
+| redpanda_kafka_request_latency_seconds | Latency of produce/consume requests per broker. This measures from the moment a request is initiated on the partition to the moment the response is fulfilled. | request ("produce" \| "consume") | histogram |
+
+#### Broker-level queries
+
+Kafka consumer request latency
+
+    histogram_quantile(0.99, sum(rate(redpanda_kafka_request_latency_seconds_bucket{redpanda_request="consume"}[5m])) by (le, provider, region, instance, namespace, pod))
+
+Kafka producer request latency
+
+    histogram_quantile(0.99, sum(rate(redpanda_kafka_request_latency_seconds_bucket{redpanda_request="produce"}[5m])) by (le, provider, region, instance, namespace, pod))
+
+Rate of Kafka consumer requests
+
+    rate(redpanda_kafka_request_latency_seconds_count{redpanda_request="consume"}[5m])
+
+Rate of Kafka producer requests
+
+    rate(redpanda_kafka_request_latency_seconds_count{redpanda_request="produce"}[5m])
+
+Rate of Kafka consumers
+
+    sum(rate(redpanda_kafka_request_bytes_total{redpanda_request="consume"} [5m])) by (provider, region, instance, namespace, pod)
+
+Rate of Kafka producers
+
+    sum(rate(redpanda_kafka_request_bytes_total{redpanda_request="produce"}[5m])) by (instance, provider, region, namespace, pod)
+
+### Consumer group metrics
+
+| Metric | Definition | Labels | Type
+| --- | --- | --- | --- |
+| redpanda_kafka_consumer_group_committed_offset | Consumer group committed offset. | group, topic, partition | gauge |
+| redpanda_kafka_consumer_group_consumers | Number of consumers in a group. | group | gauge |
+| redpanda_kafka_consumer_group_topics | Number of topics in a group. | group | gauge |
+
+#### Consumer group queries
+
+Consumers per consumer group
+
+    sum by(redpanda_group)(redpanda_kafka_consumer_group_consumers)
+
+Topics per consumer group
+
+    sum by(redpanda_group)(redpanda_kafka_consumer_group_topics)
+
+Consumer group lag
+
+    max by(redpanda_namespace, redpanda_topic, redpanda_partition)(redpanda_kafka_max_offset{redpanda_namespace="kafka"}) - on(redpanda_topic, redpanda_partition) group_right max by(redpanda_group, redpanda_topic, redpanda_partition)(redpanda_kafka_consumer_group_committed_offset)
+
+### REST proxy metrics
+| Metric | Definition | Labels | Type
+| --- | --- | --- | --- |
+| redpanda_rest_proxy_request_errors_total | Total number of rest_proxy server errors. | redpanda_status ("5xx" \| "4xx" \| "3xx") | counter |
+| redpanda_rest_proxy_request_latency_seconds | Internal latency of request for rest_proxy. | none | histogram |
+
+#### REST proxy queries
+
+REST proxy request latency
+
+    histogram_quantile(0.99, (sum(rate(redpanda_rest_proxy_request_latency_seconds_bucket[5m])) by (le, provider, region, instance, namespace, pod)))
+
+REST proxy request rate
+
+    rate(redpanda_rest_proxy_request_latency_seconds_count[5m]) + sum without(redpanda_status)(rate(redpanda_rest_proxy_request_errors_total[5m]))
+
+REST proxy request error rate
+
+    rate(redpanda_rest_proxy_request_errors_total[5m])

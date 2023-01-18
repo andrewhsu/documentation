@@ -1,0 +1,94 @@
+---
+title: Rolling Upgrades
+---
+
+<head>
+    <meta name="title" content="Rolling Upgrades | Redpanda Docs"/>
+    <meta name="description" content="One of the primary uses for maintenance mode is to perform a rolling upgrade on each node in the cluster."/>
+</head>
+
+One of the primary uses for maintenance mode is to perform a rolling upgrade on each node in the cluster. This process involves putting a node into maintenance mode, upgrading the node, taking the node out of maintenance mode, and then repeating the process on the next node in the cluster. Placing nodes into maintenance mode ensures a smooth upgrade of your cluster while reducing the risk of interruption or degradation in service.
+
+:::note
+If you are using the Redpanda Kubernetes Operator to trigger an upgrade, then node maintenance mode is automatically incorporated into the upgrade process.
+:::
+
+The upgrade process cannot be applied to downgrades between major versions, since earlier versions might not support some data formats in the current version. For example, you can't downgrade from version 22.2.1 to version 22.1.7. However, downgrades _are_ supported between minor versions; for example, you can downgrade from version 22.2.2 to version 22.2.1.
+
+## Performing a rolling upgrade
+
+To perform a rolling upgrade on a node in the cluster:
+
+1. [Enable maintenance mode](#1-enable-maintenance-mode).
+2. [Upgrade the node](#2-upgrade-node).
+3. [Disable maintenance mode](#3-disable-maintenance-mode).
+4. [Restart the node](#4-restart-node).
+
+Repeat this process for each node to upgrade.
+
+### 1. Enable maintenance mode
+
+1. Check that all nodes are healthy: 
+
+    ```bash
+    rpk cluster health
+    ```
+
+    If the cluster is healthy, the output shows `Healthy: true`.
+
+2. Select a node that has not been upgraded yet and place it into maintenance mode: 
+
+    ```bash
+    rpk cluster maintenance enable <node-id> --wait
+    ```
+
+    The `--wait` option ensures that the cluster is healthy before putting the node into maintenance mode.
+
+3. Verify that the node is in maintenance mode: 
+
+    ```bash
+    rpk cluster maintenance status
+    ```
+    
+    Confirm that `FINISHED` is `true`.
+
+4. Validate again the health of the cluster:
+
+    ```bash
+    rpk cluster health
+    ```
+
+    If the cluster is healthy, the output shows `Healthy: true`.
+
+    :::note
+    You can also evaluate [external metrics](../../monitoring) to determine cluster health. If the cluster has any issues, take the node out of maintenance mode by running the following command before proceeding with other operations, such as decommissioning or retrying the rolling upgrade:
+    
+    ```bash
+    rpk cluster maintenance disable <node-id>
+    ``` 
+    
+    :::
+
+### 2. Disable maintenance mode
+
+After you've successfully upgraded the node:
+
+1. Take the node out of maintenance mode: 
+
+    ```bash
+    rpk cluster maintenance disable <node-id>
+    ```
+
+2. Ensure that the node is no longer in maintenance mode:
+
+    ```bash
+    rpk cluster maintenance status
+    ```
+
+### 4. Restart node
+
+After you're out of maintenance mode, restart the node's Redpanda service.
+
+:::note
+You can stop the upgrade process and roll back to the original version as long as you have not upgraded every node and restarted the cluster.
+:::

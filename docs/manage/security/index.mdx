@@ -1,0 +1,48 @@
+---
+title: Security
+---
+
+<head>
+    <meta name="title" content="Security | Redpanda Docs"/>
+    <meta name="description" content="Security index page."/>
+</head>
+
+Redpanda recommends that you always configure encryption, authentication, and authorization for production environments. 
+
+- [Configure Authentication](../security/authentication)
+  
+  Different components of Redpanda support different authentication methods. You can configure multiple listeners with `redpanda.yaml`, and with each listener, you can configure the `authentication_method` and optionally TLS or mTLS.
+
+- [Configure Authorization](../security/authorization)
+  
+  Authorization works in tandem with [authentication](../security/authentication). Access-control lists (ACLs) provide a way to configure fine-grained access to provisioned users. ACLs work with SASL/SCRAM and with mTLS with principal mapping for authentication. 
+
+- [Configure Encryption](../security/encryption)
+  
+  By default, Redpanda data is sent unencrypted. A security best practice is to enable encryption with TLS or mTLS. 
+
+- [IAM Roles](../security/iam-roles)
+
+  For self-hosted clusters deployed on a public cloud platform, cloud provider IAM roles provide a safer alternative to the less secure static credential system, which is based on access keys. With static credentials, the access key and secret key are stored in plaintext in the configuration file.
+
+- [Redpanda Console Security](../security/console)
+  - [GitHub SSO Setup](../security/console/github)
+
+    Integrating Redpanda Console with GitHub allows your users to use their GitHub identities to sign-in to Console.
+
+  - [Google SSO Setup](../security/console/google)
+
+    Integrating Redpanda Console with Google allows your users to use their Google identities to sign in to Console.
+
+  - [Okta SSO Setup](../security/console/okta)
+
+    Integrating Redpanda Console with Okta allows your users to use their Okta identities to sign in to Redpanda Console.
+
+  - [Generic OIDC](../security/console/generic-oidc)
+
+    If you would like to integrate an OpenID Connect (OIDC) compatible identity provider that is not yet natively supported in Console,
+    you can configure the generic OIDC provider.
+
+:::note
+All concepts described in this section are compatible with Kafka and its client libraries and CLIs. This section does not cover ways you can protect your Redpanda cluster externally; for example, through network ACLs or private networks.
+:::

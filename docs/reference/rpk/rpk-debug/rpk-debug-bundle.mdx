@@ -1,0 +1,292 @@
+---
+title: rpk debug bundle
+---
+
+<head>
+  <meta name="title" content="rpk debug bundle| Redpanda Docs" />
+  <meta name="description" content="rpk debug list bundle" />
+</head>
+
+## rpk debug bundle
+
+`rpk debug bundle` collects environment data that can help debug and diagnose issues with a Redpanda cluster, a broker, or the machine it`s running on. It
+then bundles the collected data into a zip file.
+
+The following are the data sources that are bundled in the compressed file:
+
+<table>
+  <tbody>
+    <tr>
+      <td>Data Source</td>
+      <td>Description</td>
+    </tr>
+    <tr>
+      <td>Kafka metadata</td>
+      <td>
+        Broker configs, topic configs, start/committed/end offsets, groups,
+        group commits.
+      </td>
+    </tr>
+    <tr>
+      <td>Data directory structure</td>
+      <td>A file describing the data directory`s contents.</td>
+    </tr>
+    <tr>
+      <td>Redpanda configuration</td>
+      <td>
+        The Redpanda configuration file <code>`redpanda.yaml`</code>. SASL
+        credentials are stripped.
+      </td>
+    </tr>
+    <tr>
+      <td>/proc/cpuinfo</td>
+      <td>CPU information like make, core count, cache, frequency.</td>
+    </tr>
+    <tr>
+      <td>/proc/interrupts</td>
+      <td>IRQ distribution across CPU cores.</td>
+    </tr>
+    <tr>
+      <td>Resource usage data</td>
+      <td>
+        CPU usage percentage, free memory available for the Redpanda process.
+      </td>
+    </tr>
+    <tr>
+      <td>Clock drift</td>
+      <td>
+        The ntp clock delta (using
+        <a src="(https://www.ntppool.org/en/)">ntppool</a> as a reference) &amp;
+        round trip time.
+      </td>
+    </tr>
+    <tr>
+      <td>Kernel logs</td>
+      <td>
+        The kernel logs ring buffer (<code>syslog</code>).
+      </td>
+    </tr>
+    <tr>
+      <td>Broker metrics</td>
+      <td>
+        The local broker`s Prometheus metrics, fetched through its admin API.
+      </td>
+    </tr>
+    <tr>
+      <td>DNS</td>
+      <td>
+        The DNS info as reported by <code>dig</code>, using the hosts in
+        <code>/etc/resolv.conf</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>Disk Usage</td>
+      <td>
+        The disk usage for the data directory, as output by <code>du</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>Redpanda logs</td>
+      <td>
+        The Redpanda logs written to journald. If <code>--logs-since</code> or
+        <code>--logs-until</code> are passed, then only the logs within the resulting
+        time frame will be included.
+      </td>
+    </tr>
+    <tr>
+      <td>Socket info</td>
+      <td>
+        The active sockets data output by <code>ss</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>Running process info</td>
+      <td>
+        As reported by <code>top</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>Virtual memory stats</td>
+      <td>
+        As reported by <code>vmstat</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>Network config</td>
+      <td>
+        As reported by <code>ip addr</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>lspci</td>
+      <td>List the PCI buses and the devices connected to them.</td>
+    </tr>
+    <tr>
+      <td>dmidecode</td>
+      <td>
+        The DMI table contents. Only included if this command is run as root.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+### Usage
+
+```
+rpk debug bundle [flags]
+```
+
+### Flags
+
+<table>
+  <tbody>
+    <tr>
+      <td>
+        <strong> Value</strong>
+      </td>
+      <td>
+        <strong> Type</strong>
+      </td>
+      <td>
+        <strong> Description</strong>
+      </td>
+    </tr>
+    <tr>
+      <td>--admin-api-tls-cert</td>
+      <td>string</td>
+      <td>
+        The certificate to be used for TLS authentication with the Admin API.
+      </td>
+    </tr>
+    <tr>
+      <td>--admin-api-tls-enabled</td>
+      <td>-</td>
+      <td>
+        Enable TLS for the Admin API (not necessary if specifying custom certs).
+      </td>
+    </tr>
+    <tr>
+      <td>--admin-api-tls-key</td>
+      <td>string</td>
+      <td>
+        The certificate key to be used for TLS authentication with the Admin
+        API.
+      </td>
+    </tr>
+    <tr>
+      <td>--admin-api-tls-truststore</td>
+      <td>string</td>
+      <td>
+        The truststore to be used for TLS communication with the Admin API.
+      </td>
+    </tr>
+    <tr>
+      <td>--admin-url</td>
+      <td>string</td>
+      <td>
+        The address to the broker`s admin API. Defaults to the one in the config
+        file
+      </td>
+    </tr>
+    <tr>
+      <td>--brokers</td>
+      <td>strings</td>
+      <td>
+        Comma-separated list of broker &lt;ip&gt;:&lt;port&gt; pairs (for example,
+        <code>
+          --brokers `192.168.78.34:9092,192.168.78.35:9092,192.179.23.54:9092`
+        </code>
+        ). Alternatively, you may set the <code>REDPANDA_BROKERS</code>
+        environment variable with the comma-separated list of broker addresses.
+      </td>
+    </tr>
+    <tr>
+      <td>--config</td>
+      <td>string</td>
+      <td>
+        Redpanda config file, if not set the file will be searched for in the
+        default locations
+      </td>
+    </tr>
+    <tr>
+      <td>-h, --help</td>
+      <td>-</td>
+      <td> Help for bundle</td>
+    </tr>
+    <tr>
+      <td>--logs-since</td>
+      <td>string</td>
+      <td>
+        Include log entries on or newer than the specified date. (journalctl
+        date format, for example YYYY-MM-DD)
+      </td>
+    </tr>
+    <tr>
+      <td>--logs-until</td>
+      <td>string</td>
+      <td>
+        Include log entries on or older than the specified date. (journalctl
+        date format, for example YYYY-MM-DD)
+      </td>
+    </tr>
+    <tr>
+      <td>--password</td>
+      <td>string</td>
+      <td> SASL password to be used for authentication.</td>
+    </tr>
+    <tr>
+      <td>--sasl-mechanism</td>
+      <td>string</td>
+      <td>
+        The authentication mechanism to use. Supported values: SCRAM-SHA-256,
+        SCRAM-SHA-512.
+      </td>
+    </tr>
+    <tr>
+      <td>--timeout</td>
+      <td>duration</td>
+      <td>
+        How long to wait for child commands to execute (for example{" "}
+        <code>30s</code>,<code>1.5m</code>) (default 10s).
+      </td>
+    </tr>
+    <tr>
+      <td>--tls-cert</td>
+      <td>string</td>
+      <td>
+        The certificate to be used for TLS authentication with the broker.
+      </td>
+    </tr>
+    <tr>
+      <td>--tls-enabled</td>
+      <td>-</td>
+      <td>
+        Enable TLS for the Kafka API (not necessary if specifying custom certs).
+      </td>
+    </tr>
+    <tr>
+      <td>--tls-key</td>
+      <td>string</td>
+      <td>
+        The certificate key to be used for TLS authentication with the broker.
+      </td>
+    </tr>
+    <tr>
+      <td>--tls-truststore</td>
+      <td>string</td>
+      <td> The truststore to be used for TLS communication with the broker.</td>
+    </tr>
+    <tr>
+      <td>--user</td>
+      <td>string</td>
+      <td> SASL user to be used for authentication.</td>
+    </tr>
+    <tr>
+      <td>-v, --verbose</td>
+      <td>-</td>
+      <td>
+        Enable verbose logging (default <code>false</code>).
+      </td>
+    </tr>
+  </tbody>
+</table>

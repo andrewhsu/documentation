@@ -1,0 +1,58 @@
+---
+title: Redpanda Licensing
+---
+
+<head>
+    <meta name="title" content="Redpanda licensing | Redpanda Docs"/>
+    <meta name="description" content="Redpanda is free and source-available at the Redpanda GitHub repo. Additional features are included with an enterprise license."/>
+</head>
+
+Redpanda Community Edition is free and source-available at the [Redpanda GitHub repo](https://github.com/redpanda-data/redpanda). Additional features are included with a license for Redpanda Enterprise Edition.
+
+
+## Redpanda Community Edition
+
+Redpanda Community Edition is licensed with the Redpanda [Business Source License (BSL)](https://github.com/redpanda-data/redpanda/blob/dev/licenses/bsl.md). These core features are free and source-available. 
+
+:::note
+* Users cannot provide Redpanda as a commercial streaming or queuing service to others. 
+* The BSL code converts to Apache 2.0 licensing four years after each code merge.
+:::
+
+
+## Redpanda Enterprise Edition
+
+Redpanda Enterprise Edition is licensed with the [Redpanda Community License (RCL)](https://github.com/redpanda-data/redpanda/blob/dev/licenses/rcl.md). It includes the free features licensed under the Redpanda BSL, as well as the following features:
+
+* [Tiered Storage](../../manage/tiered-storage)
+* [Data Archiving](../../manage/data-archiving)
+* [Continuous Data Balancing](../../manage/cluster-maintenance/continuous-data-balancing)
+* [Remote Read Replica](../../manage/remote-read-replicas)
+* [Redpanda Console single sign-on authentication](../../manage/security/authentication)
+* [Redpanda Console role-based access control](../../manage/security/authorization)
+
+Enterprise features require a license key. You can evaluate enterprise features with a free 30-day trial. Contact [Redpanda Sales](https://redpanda.com/try-redpanda?section=enterprise-cloud) to request a trial license, to extend your trial period, or to purchase an Enterprise Edition license.
+
+### Apply license key
+
+A license key unlocks Redpanda Enterprise Edition features. To apply the license key to your cluster, run:
+
+`rpk cluster license set` 
+
+Either provide a path to a file containing the license, or provide the license string inline. For example, assuming you use the default admin host/port of `0.0.0.0:9644`, run:
+
+`rpk cluster license set --path /home/organization/redpanda.license --api-urls 0.0.0.0:9644`
+
+or 
+
+`rpk cluster license set <license string>`
+
+If neither the path nor the license string are are provided, `rpk` looks for the license in `/etc/redpanda/redpanda.license`. 
+
+### Check license status
+
+To check the status of your current license, run:
+
+`rpk cluster license info --api-urls 0.0.0.0:9644`
+
+Redpanda sends warning messages in the cluster logs if you enable enterprise features without a valid license key.

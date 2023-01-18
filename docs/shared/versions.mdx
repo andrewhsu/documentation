@@ -1,0 +1,16 @@
+<!-- Versions: get supported versions of software for the current version of Redpanda.
+To use in an .mdx file, import this component and set the name to the version that you want to reference:
+  import Versions from '@site/docs/platform/shared/versions.mdx'
+  <Versions name="<name-of-software>"/>
+-->
+
+<!-- Add new software versions to this object -->
+export const versions = {
+  "kubernetes" : "1.21",
+  "helm" : "3.6.0",
+  "linux-kernel" : "3.10.0-514 or 4.18",
+};
+
+export default function Versions({name})  {
+  return <span>{versions[name]}</span>
+}

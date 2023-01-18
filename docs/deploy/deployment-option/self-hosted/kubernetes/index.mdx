@@ -1,0 +1,38 @@
+---
+title: Deploy on Kubernetes
+---
+
+<head>
+    <meta name="title" content="Deploy on Kubernetes | Redpanda Docs"/>
+    <meta name="description" content="Deploy on Kubernetes."/>
+</head>
+
+Kubernetes is a container orchestration tool that helps you to manage Redpanda cluster deployments using declarative configuration files called _manifests_.
+Kubernetes provides a standardized way of achieving the following:
+
+- High availability 
+- Disaster recovery
+- Scalability
+
+- [Overview](../kubernetes/kubernetes-production-deployment)
+
+    Redpanda offers two tools for deploying Redpanda clusters in Kubernetes:
+
+    - Redpanda Helm chart (recommended)
+    - Redpanda Operator (not recommended for new deployments)
+
+- [Kubernetes Cluster Requirements](../kubernetes/kubernetes-cluster-requirements)
+
+    This topic is a checklist with the prerequisites and system requirements for installing production Redpanda in a Kubernetes cluster using the Helm chart.
+
+- [Best Practices](../kubernetes/kubernetes-best-practices)
+
+    This topic explains Redpanda's tips and recommendations for Kubernetes deployments.
+
+- [Tune Worker Nodes](../kubernetes/kubernetes-tune-workers)
+
+    To get the best performance from your hardware, set Redpanda to production mode on each worker node and run the auto-tuning tool. The auto-tuning tool identifies the hardware configuration on your worker node and optimizes the Linux kernel to give you the best performance.
+
+- [Deploy Redpanda](../kubernetes/kubernetes-deploy)
+
+    This topic describes how to use the Redpanda Helm chart to deploy a Redpanda cluster on Kubernetes.

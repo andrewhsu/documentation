@@ -1,0 +1,616 @@
+---
+title: Configure Authorization
+---
+
+<head>
+    <meta name="title" content="Configure Authorization | Redpanda Docs"/>
+    <meta name="description" content="ACLs are the main mechanism supported by Redpanda to manage user permissions."/>
+</head>
+
+Authorization works in tandem with [authentication](../authentication). Access-control lists (ACLs) provide a way to configure fine-grained access to provisioned users. ACLs work with SASL/SCRAM and with mTLS with principal mapping for authentication. 
+
+## ACLs
+
+Access-control lists (ACLs) are the primary mechanism used by Redpanda to manage user permissions. Redpanda stores ACLs internally, replicated with [Raft](https://raft.github.io/) to provide the same consensus guarantees as your data. You can manage ACLs with `rpk acl`.
+ 
+After you enable authorization, by default, only superusers have access to the resources. Redpanda recommends creating other users to effectively use Redpanda and then, create ACLs for them.
+
+### ACL terminology
+
+Entities accessing the **resources** are called **principals**. A User:foo is the principal for user "foo". You can decide whether to allow or deny **permissions** to access to the resources.
+ 
+You can also specify the **hosts** for which they have access.
+ 
+This access is represented as **operations**, such as `read`, `write`, or `describe`, and the operations can be performed on **resources**, such as a topic. You can filter the resources by name. 
+
+ACL commands work on a multiplicative basis. If you set up two principals and two permissions, the result is four ACLs: both permissions for the first principal, as well as both permissions for the second principal. Adding two resources further doubles the ACLs created.
+
+:::tip
+Be as specific as possible when granting ACLs. 
+:::
+
+Granting more ACLs than necessary per principal may inadvertently allow clients to do things they should not, such as deleting topics or joining the wrong consumer group.
+
+### Principals
+
+All ACLs require a principal. A principal is composed of two parts: the type, and the name. Redpanda supports the type "User". When you create user "bar", Redpanda expects you to add ACLs for "User:bar". 
+
+The `--allow-principal` and `--deny-principal` flags add this prefix for you, if necessary. 
+
+The special name '\*' matches any name, meaning an ACL with principal "User:\*" grants or denies the permission for any user.
+
+### Hosts
+
+Hosts can be seen as an extension of the principal and can effectively gate where the principal can connect from. When creating ACLs, unless otherwise specified, the default host is the wildcard `*`, which allows or denies the principal from all hosts.
+
+When specifying hosts, you must pair the `--allow-host` flag with the `--allow-principal` flag and the `--deny-host` flag with the `--deny-principal` flag.
+
+### Resources
+
+A resource is what an ACL allows or denies access to. There are four resources within Redpanda: `topics`, `groups`, `cluster`, and `transactionalid`. Names for each of these resources can be specified with their respective flags.
+
+Resources combine with the operation that is allowed or denied on that resource. By default, resources are specified on an exact name match (a "literal" match).
+
+Use the `--resource-pattern-type` flag to specify that a resource name is "prefixed", meaning to allow anything with the given prefix. A literal name of "foo" matches only the topic "foo", while the prefixed name of "foo-" matches both "foo-bar" and "foo-jazz". The special wildcard resource name '\*' matches any name of the given resource type (`--topic` '\*' matches all topics).
+
+### Operations
+
+Paired with resources, operations are the actions that are allowed or denied.
+Redpanda supports the following operations:
+
+<table>
+<tbody>
+<tr>
+<td>Operation&nbsp;</td>
+<td>Description</td>
+</tr>
+<tr>
+<td>&nbsp;ALL</td>
+<td>&nbsp;Allows all operations below.</td>
+</tr>
+<tr>
+<td>READ</td>
+<td>&nbsp;Allows reading a given resource.</td>
+</tr>
+<tr>
+<td>
+<div>
+<div>WRITE</div>
+</div>
+</td>
+<td>&nbsp;Allows writing to a given resource.</td>
+</tr>
+<tr>
+<td>
+<div>
+<div>CREATE</div>
+</div>
+</td>
+<td>&nbsp;Allows creating a given resource.</td>
+</tr>
+<tr>
+<td>
+<div>
+<div>DELETE</div>
+</div>
+</td>
+<td>&nbsp;Allows deleting a given resource</td>
+</tr>
+<tr>
+<td>
+<div>
+<div>ALTER</div>
+</div>
+</td>
+<td>&nbsp;Allows altering non-configurations.</td>
+</tr>
+<tr>
+<td>DESCRIBE</td>
+<td>&nbsp;Allows querying non-configurations.</td>
+</tr>
+<tr>
+<td>DESCRIBE_CONFIGS</td>
+<td>&nbsp;Allows describing configurations.</td>
+</tr>
+<tr>
+<td>
+<div>
+<div>ALTER_CONFIGS</div>
+</div>
+</td>
+<td>&nbsp;Allows altering configurations.</td>
+</tr>
+</tbody>
+</table>
+
+### Producing/Consuming
+
+The following operations are necessary for each individual client request, where **resource** corresponds to the resource flag, and "for xyz" corresponds to the resource names in the request:
+
+```
+
+PRODUCING/CONSUMING
+
+    Produce      WRITE on TOPIC for topics
+                 WRITE on TRANSACTIONAL_ID for the transaction.id
+
+    Fetch        READ on TOPIC for topics
+
+    ListOffsets  DESCRIBE on TOPIC for topics
+
+    Metadata     DESCRIBE on TOPIC for topics
+                 CREATE on CLUSTER for kafka-cluster (if automatically creating topics)
+                 CREATE on TOPIC for topics (if automatically creating topics)
+
+    OffsetForLeaderEpoch  DESCRIBE on TOPIC for topics
+
+GROUP CONSUMING
+
+    FindCoordinator  DESCRIBE on GROUP for group
+                     DESCRIBE on TRANSACTIONAL_ID for transactional.id (transactions)
+
+    OffsetCommit     READ on GROUP for groups
+                     READ on TOPIC for topics
+
+    OffsetFetch      DESCRIBE on GROUP for groups
+                     DESCRIBE on TOPIC for topics
+
+    OffsetDelete     DELETE on GROUP for groups
+                     READ on TOPIC for topics
+
+    JoinGroup        READ on GROUP for group
+    Heartbeat        READ on GROUP for group
+    LeaveGroup       READ on GROUP for group
+    SyncGroup        READ on GROUP for group
+
+TRANSACTIONS (including FindCoordinator above)
+
+    AddPartitionsToTxn  WRITE on TRANSACTIONAL_ID for transactional.id
+                        WRITE on TOPIC for topics
+
+    AddOffsetsToTxn     WRITE on TRANSACTIONAL_ID for transactional.id
+                        READ on GROUP for group
+
+    EndTxn              WRITE on TRANSACTIONAL_ID for transactional.id
+
+    TxnOffsetCommit     WRITE on TRANSACTIONAL_ID for transactional.id
+                        READ on GROUP for group
+                        READ on TOPIC for topics
+
+ADMIN
+
+    CreateTopics      CREATE on CLUSTER for kafka-cluster
+                      CREATE on TOPIC for topics
+                      DESCRIBE_CONFIGS on TOPIC for topics, 
+                      for returning topic configs on create
+
+    CreatePartitions  ALTER on TOPIC for topics
+
+    DeleteTopics      DELETE on TOPIC for topics
+                      DESCRIBE on TOPIC for topics, if deleting by topic ID 
+                      (in addition to prior ACL)
+
+    DeleteRecords     DELETE on TOPIC for topics
+
+    DescribeGroup     DESCRIBE on GROUP for groups
+
+    ListGroups        DESCRIBE on GROUP for groups
+                      or, DESCRIBE on CLUSTER for kafka-cluster
+
+    DeleteGroups      DELETE on GROUP for groups
+
+    DescribeConfigs   DESCRIBE_CONFIGS on CLUSTER for cluster (broker describing)
+                      DESCRIBE_CONFIGS on TOPIC for topics (topic describing)
+
+    AlterConfigs      ALTER_CONFIGS on CLUSTER for cluster (broker altering)
+                      ALTER_CONFIGS on TOPIC for topics (topic altering)
+
+```
+
+To get this information at the CLI, run: 
+
+```bash
+rpk acl --help-operations 
+```
+
+In flag form to set up a general producing/consuming client, you can invoke `rpk acl create` up to three times with the following (including your `--allow-principal`):
+
+```bash
+--operation write,read,describe --topic [topics]
+--operation describe,read --group [group.id]
+--operation describe,write --transactional-id [transactional.id]
+```
+
+### Permissions 
+
+A client can be allowed access or denied access. By default, all permissions are denied. You only need to specifically deny a permission if you allow a wide set of permissions and then want to deny a specific permission in that set. You could allow all operations, and then specifically deny writing to topics.
+
+### Management
+
+Commands for managing users and ACLs work on a specific ACL basis, but listing and deleting ACLs works on filters. Filters allow matching many ACLs to be printed, listed, and deleted at the same time. Because this can be risky for deleting, the delete command prompts for confirmation by default. 
+
+## rpk for managing users and ACLs
+
+The `rpk acl` command manages your ACLs as well as your SASL users. (If you're on Kubernetes, you can use `kubectl exec` to run rpk commands.)
+ 
+```bash
+rpk acl [command] [flags]
+```
+ 
+For example, to create a user:
+ 
+```bash
+rpk acl user create \
+--new-username Jack \
+--new-password <password> \
+--api-urls localhost:9644
+```
+ 
+Result:
+ 
+```bash
+Created user 'Jack'
+```
+ 
+Here are all the available commands and how they interact with Redpanda:
+ 
+<table>
+<tbody>
+<tr>
+<td>Command</td>
+<td>Protocol</td>
+<td>Default Port</td>
+</tr>
+<tr>
+<td>user</td>
+<td>Admin API</td>
+<td>9644</td>
+</tr>
+<tr>
+<td>list</td>
+<td>Kafka API</td>
+<td>9092</td>
+</tr>
+<tr>
+<td>create</td>
+<td>Kafka API</td>
+<td>9092</td>
+</tr>
+<tr>
+<td>delete</td>
+<td>Kafka API</td>
+<td>9092</td>
+</tr>
+</tbody>
+</table>
+
+To get more information, run `rpk acl -h`.
+ 
+### Global flags
+ 
+Every `rpk acl` command can use these flags:
+ 
+<table>
+<tbody>
+<tr>
+<td>Flag</td>
+<td>Description</td>
+</tr>
+<tr>
+<td>--admin-api-tls-cert</td>
+<td>The certificate to be used for TLS authentication with the Admin API.</td>
+</tr>
+<tr>
+<td>--admin-api-tls-enabled</td>
+<td>Enable TLS for the Admin API (not necessary if specifying custom certs). This is assumed as true when passing other --admin-api-tls flags.</td>
+</tr>
+<tr>
+<td>--admin-api-tls-key</td>
+<td>The certificate key to be used for TLS authentication with the Admin API.</td>
+</tr>
+<tr>
+<td>--admin-api-tls-truststore</td>
+<td>The truststore to be used for TLS communication with the Admin API.</td>
+</tr>
+<tr>
+<td>--brokers</td>
+<td>Comma-separated list of broker ip:port pairs (for example, --brokers '192.168.78.34:9092,192.168.78.35:9092,192.179.23.54:9092' ). Alternatively, you can set the REDPANDA_BROKERS environment variable with the comma-separated list of broker addresses.</td>
+</tr>
+<tr>
+<td>--config</td>
+<td>Redpanda configuration file. If not set, the file is searched in the default locations.</td>
+</tr>
+<tr>
+<td>-h, --help</td>
+<td>Help.</td>
+</tr>
+<tr>
+<td>--password</td>
+<td>SASL password to be used for authentication.</td>
+</tr>
+<tr>
+<td>--sasl-mechanism</td>
+<td>The authentication mechanism to use. Supported values: SCRAM-SHA-256, SCRAM-SHA-512.</td>
+</tr>
+<tr>
+<td>--tls-cert</td>
+<td>The certificate to be used for TLS authentication with the broker.</td>
+</tr>
+<tr>
+<td>--tls-enabled</td>
+<td>Enable TLS for the Kafka API (not necessary if specifying custom certs). This is assumed to be true when passing other --tls flags.</td>
+</tr>
+<tr>
+<td>--tls-key</td>
+<td>The certificate key to be used for TLS authentication with the broker.</td>
+</tr>
+<tr>
+<td>--tls-truststore</td>
+<td>The truststore to be used for TLS communication with the broker.</td>
+</tr>
+<tr>
+<td>--user</td>
+<td>SASL user to be used for authentication.</td>
+</tr>
+</tbody>
+</table>
+
+### Create ACLs
+ 
+With the create command, every ACL combination is a created ACL. At least one principal, one host, one resource, and one operation are required to create a single ACL.
+ 
+```bash
+rpk acl create/delete [globalACLFlags] [localFlags]
+```
+ 
+You can use the global flags and some other local flags. Following are the available local flags:
+ 
+<table>
+<tbody>
+<tr>
+<td>Flag</td>
+<td>Description</td>
+</tr>
+<tr>
+<td>--allow-host</td>
+<td>Host for which access will be granted (repeatable).</td>
+</tr>
+<tr>
+<td>--allow-principal</td>
+<td>Principals to which permissions will be granted (repeatable).</td>
+</tr>
+<tr>
+<td>--cluster</td>
+<td>Whether to grant ACLs to the cluster.</td>
+</tr>
+<tr>
+<td>--deny-host</td>
+<td>Host from which access will be denied (repeatable).</td>
+</tr>
+<tr>
+<td>--deny-principal</td>
+<td>Principal to which permissions will be denied (repeatable).</td>
+</tr>
+<tr>
+<td>--group</td>
+<td>Group to grant ACLs for (repeatable).</td>
+</tr>
+<tr>
+<td>-h, --help</td>
+<td>Help.</td>
+</tr>
+<tr>
+<td>--name-pattern</td>
+<td>The name pattern type to be used when matching the resource names.</td>
+</tr>
+<tr>
+<td>--operation</td>
+<td>Operation that the principal will be allowed or denied. Can be passed many times.</td>
+</tr>
+<tr>
+<td>--resource-pattern-type</td>
+<td>Pattern to use when matching resource names (literal or prefixed) (default "literal").</td>
+</tr>
+<tr>
+<td>--topic</td>
+<td>Topic to grant ACLs for (repeatable).</td>
+</tr>
+<tr>
+<td>--transactional-id</td>
+<td>Transactional IDs to grant ACLs for (repeatable).</td>
+</tr>
+</tbody>
+</table>
+
+Examples: 
+
+To allow all permissions to user bar on topic "foo" and group "g", run:
+
+```bash
+rpk acl create --allow-principal bar --operation all --topic foo --group g
+```
+
+To allow read permissions to all users on topics biz and baz, run:
+
+```bash
+rpk acl create --allow-principal '*' --operation read --topic biz,baz
+```
+
+To allow write permissions to user buzz to transactional id "txn", run:
+
+```bash
+rpk acl create --allow-principal User:buzz --operation write --transactional-id txn
+```
+
+### List and delete ACLs
+
+List and delete for ACLs have a multiplying effect (similar to create ACL), but delete is more advanced. List and delete work on a filter basis. Any unspecified flag defaults to matching everything (all operations, or all allowed principals, and so on). 
+
+To ensure that you don't accidentally delete more than you intend, this command prints everything that matches your input filters and prompts for a confirmation before the delete request is issued. Anything matching more than 10 ACLs also asks for confirmation.
+
+If no resources are specified, all resources are matched. If no operations are specified, all operations are matched. 
+
+You can opt in to matching everything. For example,  `--operation any` matches any operation.
+
+The `--resource-pattern-type`, defaulting to `any`, configures how to filter resource names:
+  * `any` returns exact name matches of either prefixed or literal pattern type
+  * `match` returns wildcard matches, prefix patterns that match your input, and literal matches
+  * `prefix` returns prefix patterns that match your input (prefix "fo" matches "foo")
+  * `literal` returns exact name matches
+
+To list or delete ACLs, run:
+ 
+```bash
+rpk acl list/delete [globalACLFlags] [localFlags]
+```
+ 
+You can use the global flags and some other local flags. Following are the available local flags:
+
+<table>
+<tbody>
+<tr>
+<td>&nbsp;Flag</td>
+<td>Description&nbsp;</td>
+</tr>
+<tr>
+<td>--allow-host&nbsp;</td>
+<td>Allowed host ACLs to list/remove. (repeatable)</td>
+</tr>
+<tr>
+<td>&nbsp;--allow-principal</td>
+<td>Allowed principal ACLs to list/remove. (repeatable)</td>
+</tr>
+<tr>
+<td>&nbsp;--cluster</td>
+<td>Whether to list/remove ACLs to the cluster.</td>
+</tr>
+<tr>
+<td>&nbsp;--deny-host</td>
+<td>Denied host ACLs to list/remove. (repeatable)</td>
+</tr>
+<tr>
+<td>&nbsp;--deny-principal</td>
+<td>Denied principal ACLs to list/remove. (repeatable)</td>
+</tr>
+<tr>
+<td>&nbsp;-d, --dry&nbsp;</td>
+<td>Dry run: validate what would be deleted.</td>
+</tr>
+<tr>
+<td>&nbsp;--group</td>
+<td>Group to list/remove ACLs for. (repeatable)</td>
+</tr>
+<tr>
+<td>&nbsp;-h, --help</td>
+<td>Help.</td>
+</tr>
+<tr>
+<td>&nbsp;--no-confirm&nbsp;</td>
+<td>Disable confirmation prompt.</td>
+</tr>
+<tr>
+<td>&nbsp;--operation</td>
+<td>Operation to list/remove. (repeatable)</td>
+</tr>
+<tr>
+<td>&nbsp;-f, --print-filters</td>
+<td>Print the filters that were requested. (failed filters are always printed)</td>
+</tr>
+<tr>
+<td>--resource-pattern-type</td>
+<td>Pattern to use when matching resource names. (any, match, literal, or prefixed) (default "any")</td>
+</tr>
+<tr>
+<td>--topic</td>
+<td>Topic to list/remove ACLs for. (repeatable)</td>
+</tr>
+<tr>
+<td>--transactional-id&nbsp;</td>
+<td>Transactional IDs to list/remove ACLs for. (repeatable)</td>
+</tr>
+</tbody>
+</table>
+
+### User
+ 
+This command manages the SASL users. If SASL is enabled, a SASL user talks to Redpanda, and ACLs control what your user has access to. Using SASL requires setting `enable_sasl: true` in the Redpanda section of your `redpanda.yaml`.
+ 
+```bash
+rpk acl user [command] [globalACLFlags] [globalUserFlags]
+```
+ 
+Following are the available global user flags:
+ 
+<table>
+<tbody>
+<tr>
+<td>Flag</td>
+<td>Description</td>
+<td>Supported Value</td>
+</tr>
+<tr>
+<td>--api-urls</td>
+<td>The comma-separated list of Admin API addresses (IP:port). You must specify one for each node.</td>
+<td>strings</td>
+</tr>
+<tr>
+<td>-h, --help</td>
+<td>Help.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### User create
+
+This command creates a single SASL user with the given password, and optionally with a custom "mechanism". The mechanism determines which authentication flow the client uses for this user/password. Redpanda supports two mechanisms: `SCRAM-SHA-256`, the default, and `SCRAM-SHA-512`, which is the same flow but uses sha512.
+
+Before a created SASL account can be used, you must also create ACLs to grant the account access to certain resources in your cluster.
+
+To create a SASL user, run:
+ 
+```bash
+rpk acl user create [USER] -p [PASSWORD] [globalACLFlags] [globalUserFlags] [localFlags]
+```
+ 
+Here are the local flags:
+<table>
+<tbody>
+<tr>
+<td>Flag</td>
+<td>Description</td>
+</tr>
+<tr>
+<td>-h, --help</td>
+<td>Help.</td>
+</tr>
+<tr>
+<td>--mechanism</td>
+<td>SASL mechanism to use (scram-sha-256, scram-sha-512, case insensitive) (default "scram-sha-256")</td>
+</tr>
+</tbody>
+</table>
+
+### User delete
+ 
+This command deletes the specified SASL account from Redpanda. This does not delete any ACLs that may exist for this user. You may want to re-create the user later, as well, not all ACLs have users that they describe (instead they are for wildcard users).
+ 
+```bash
+rpk acl user delete [USER] [globalACLFlags] [globalUserFlags] 
+```
+
+### User list
+ 
+This command lists SASL users. 
+ 
+```bash
+rpk acl user list [globalACLFlags] [globalUserFlags]
+```
+ 
+You can also use the shortened version changing `list` to `ls`.
+
+---
+
+## Suggested reading
+
+- [How to use data security with ACLs](https://redpanda.com/blog/built-in-security-with-acls/)
