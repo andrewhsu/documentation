@@ -16,7 +16,7 @@ This feature requires an [Enterprise license](../../introduction/licenses). To u
 
 Tiered Storage helps to lower storage costs by offloading log segments to cloud storage. You can specify the amount of storage you want to retain in local storage. You don't need to specify which log segments you want to move, because Redpanda moves them automatically based on cluster-level configuration properties. Tiered Storage indexes where data is offloaded, so it can retrieve the data when you need it.
 
-Redpanda supports Tiered Storage with Amazon S3, Google Cloud Storage (GCS), and Microsoft Azure Blob Storage (ABS). 
+Redpanda natively supports Tiered Storage with Amazon S3, Google Cloud Storage (GCS), and Microsoft Azure Blob Storage (ABS). 
 
 :::caution
 Do not use Tiered Storage with [data transforms](../../labs/data-transform), which is a lab feature in technical preview. Lab features are not supported for production usage.

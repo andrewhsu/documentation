@@ -149,7 +149,7 @@ Kafka producer rate
 | redpanda_storage_disk_total_bytes | Total size of attached storage, in bytes. | none | counter |
 | redpanda_uptime_seconds_total | Total CPU busy time in seconds. | none | gauge |
 | redpanda_cloud_client_not_found | Number of requests that came back empty from cloud storage. | Labels differ based on the cloud provider. | --- |
-| redpanda_cloud_client_throttled | Number of client requests that were throttled. | Labels differ based on the cloud provider. | --- |
+| redpanda_cloud_client_backoff | Number of client requests that backed off. | Labels differ based on the cloud provider. | --- |
 | redpanda_cloud_storage_upload_backoff | Number of upload requests that backed off. | Labels differ based on the cloud provider. | --- |
 | redpanda_cloud_storage_download_backoff | Number of download requests that backed off. | Labels differ based on the cloud provider. | --- |
 | redpanda_cloud_client_uploads | Number of uploads to cloud storage. | Labels differ based on the cloud provider. For S3: endpoint (S3 endpoint) and region (S3 region). For Azure: endpoint (ABS endpoint) and storage_account (ABS account). | counter |
