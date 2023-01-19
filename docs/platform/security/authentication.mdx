@@ -70,11 +70,7 @@ As a security best practice, don't use the superuser to interact with the cluste
 
 ## Enable SASL authentication
 
-Simple Authentication Security Layer (SASL) is an authentication framework that lets the user choose the authentication mechanism. Redpanda supports Kerberos (GSSAPI) and the Salted Challenge Response Authentication Mechanism (SCRAM) authentication methods. SCRAM provides strong encryption for user names and passwords by default and does not require an external data store for user information. Redpanda supports the following SASL mechanisms: 
-
-* `SCRAM-SHA-256`
-* `SCRAM-SHA-512`
-* `GSSAPI`
+Simple Authentication Security Layer (SASL) is a framework that lets the user choose the authentication mechanism. Redpanda supports multiple authentication mechanisms: GSSAPI (Kerberos) and SCRAM (Salted Challenge Response Authentication Mechanism). SCRAM provides strong encryption for user names and passwords by default and does not require an external data store for user information. Redpanda supports  `SCRAM-SHA-256` and `SCRAM-SHA-512`.
 
 :::note
 SASL authentication is only available for the Kafka API.
@@ -141,9 +137,11 @@ redpanda:
 
 ### Enable Kerberos
 
+Configure Kerberos authentication using a keytab, which contains the user credentials. This requires generating and verifying the keytab. 
+
 #### Prerequisites
 
-1. Ensure that host names and fully qualified domain names (FQDN) are configured properly and don't need to be changed in the near future.
+1. Ensure that host names and fully qualified domain names (FQDN) are configured properly.
 
 2. Install the `krb5-workstation` library on all Redpanda nodes:
 
@@ -155,9 +153,9 @@ redpanda:
   $ sudo yum install krb5-workstation krb5-libs
   ```
 
-1. Install required libraries for Kerberos on Redpanda nodes. Configure the `/etc/krb5.conf` file to use Active Directory or other corporate key distribution center (KDC). 
+3. Install required libraries for Kerberos on Redpanda nodes. Configure the `/etc/krb5.conf` file to use Active Directory or another corporate key distribution center (KDC). 
    
-   In the following example, `krb5.conf` has configurations in bold showing realm information that needs to point to the proper corporate KDC.
+   In the following example, `krb5.conf` shows realm information to point to the corporate KDC.
 
   ```bash
   [logging]
@@ -181,11 +179,11 @@ redpanda:
     demo = REFARCH-AD.CLOUD.LAB.REDHAT.COM
   ```
 
-1. For each node, create two principals: `host/<FQDN>@<REALM>.COM` and `redpanda/<FQDN>@<REALM>.COM`, ensuring that the expiration date is long enough and the tickets are renewable.
+1. For each node, create two principals: `host/<FQDN>@<REALM>.COM` and `redpanda/<FQDN>@<REALM>.COM`, ensuring that the expiration date is long enough and that the tickets are renewable.
 
-#### Enable Kerberos for an existing cluster
+#### Enable Kerberos
 
-1. Generate keytabs for all nodes:
+1. Generate keytabs for all (or any new) nodes:
 
   ```bash
   # Generate all keytabs in cluster with a provided password
@@ -194,6 +192,7 @@ redpanda:
   # Regenerate all keytabs in cluster
   $ rpk security generate-keytabs --regenerate
   ```
+
 
 2. Verify that the Redpanda user can find, read, and renew the Kerberos ticket. To validate Kerberos keytabs:
 
@@ -224,39 +223,6 @@ redpanda:
   $ rpk cluster config set sasl_mechanisms KERBEROS,SCRAM
   ```
 
-
-#### Enable Kerberos for a new node
-
-1. Redpanda administrator generates keytabs for the new node. The following example shows options to regenerate keytabs in the cluster. (Account principals may require unique passwords.)
-
-  ```bash
-  # Generate new single keytab in cluster using unique password
-  $ rpk security generate-keytabs
-    redpanda-01: keytab already exists.
-    redpanda-02: keytab already exists.
-    redpanda-03: creating keytab.
-  ```
-
-1. Verifies that the Redpanda user can find, read, and renew the kerberos ticket. To validate Kerberos keytabs:
-   
-  ```bash
-  $ rpk security debug-keytabs
-    Inspecting keytab on redpanda-01: OK
-      * keytab found: yes
-          - /etc/redpanda/redpanda.keytab
-      * keytab readable: yes
-      * service principal found: yes
-          - redpanda/redpanda-01.example.com
-      * ticket renewable: yes
-    Inspecting keytab on redpanda-02: ERROR
-      * keytab found: yes
-          - /etc/redpanda/redpanda.keytab
-      * keytab readable: no
-    Inspecting keytab on redpanda-03: OK
-    ... 
-  ```
-
-3. Redpanda administrator starts broker service
 
 ### Configure Schema Registry and HTTP Proxy to connect to Redpanda with SASL
 
