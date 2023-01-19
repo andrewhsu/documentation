@@ -76,6 +76,10 @@ Simple Authentication Security Layer (SASL) is a framework that lets the user ch
 SASL authentication is only available for the Kafka API.
 :::
 
+:::info
+Kerberos authentication requires an [Enterprise license](../../introduction/licenses). To upgrade, contact [Redpanda sales](https://redpanda.com/try-redpanda?section=enterprise-cloud).
+:::
+
 When you run a command with SASL authentication, you must include the mechanism with the following flag: 
 
 ```yaml
@@ -138,6 +142,10 @@ redpanda:
 ### Enable Kerberos
 
 Configure Kerberos authentication using a keytab, which contains the user credentials. This requires generating and verifying the keytab. 
+
+:::info
+Kerberos authentication requires an [Enterprise license](../../introduction/licenses). To upgrade, contact [Redpanda sales](https://redpanda.com/try-redpanda?section=enterprise-cloud).
+:::
 
 #### Prerequisites
 
