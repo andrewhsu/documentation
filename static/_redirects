@@ -204,6 +204,11 @@
 /docs/platform/quickstart                                                            /docs/get-started/quick-start/index 301!
 /docs/platform/quickstart/kubernetes-qs-dev                                           /docs/get-started/quick-start/kubernetes-qs-dev 301!
 /docs/platform/quickstart/quick-start-docker                                          /docs/get-started/quick-start/quick-start-docker 301!
+docs/quickstart/quick-start-docker/                                                   /docs/get-started/quick-start/quick-start-docker 301!
+docs/quickstart/kubernetes-qs-dev/                                                    /docs/get-started/quick-start/kubernetes-qs-dev 301!
+docs/quickstart/quick-start-linux/                                                    /docs/get-started/quick-start/quick-start-linux 301!
+docs/quickstart/quick-start-macos/                                                    /docs/get-started/quick-start/quick-start-macos 301!
+docs/quickstart/quick-start-windows/                                                  /docs/get-started/quick-start/quick-start-windows 301!
 /docs/platform/quickstart/quick-start-linux                                           /docs/get-started/quick-start/quick-start-linux 301!
 /docs/platform/quickstart/quick-start-macos                                           /docs/get-started/quick-start/quick-start-macos 301!
 /docs/platform/quickstart/quick-start-windows                                         /docs/get-started/quick-start/quick-start-docker 301!

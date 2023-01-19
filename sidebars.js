@@ -842,7 +842,7 @@ module.exports = {
             },
             {
               type: "doc",
-              label: "Docker Compose Configuration",
+              label: "Docker Compose Templates",
               id: "reference/console/docker-compose",
             },
             "reference/console/record-deserialization",

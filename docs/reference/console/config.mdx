@@ -266,14 +266,25 @@ licenseFilepath:
 # This feature requires an Enterprise license.
 login:
   enabled: false
-  # jwtSecret is a secret string that signs and encrypts
-  # the JSON Web tokens used by the backend for session management.
-  jwtSecret: redacted
-# Redpanda Console stores users' session data in cookies with no fixed size.
-# Because some browsers enforce maximum size limits on cookies, 
-# you can enable useCookieChunking to split a single big cookie into multiple smaller ones.
-# When useCookieChunking is enabled, cookies are kept below 4KiB, 
-# which is a maximum size limit that is set by most browsers.
+  # jwtSecret is the secret key you must use to sign and encrypt the JSON 
+  # web token used to store user sessions. This secret key is 
+  # critical for the security of Redpanda Console's authentication and 
+  # authorization system. Use a long, complex key with a combination of 
+  # numbers, letters, and special characters. While you must use a minimum of 
+  # 10 characters, Redpanda recommends using more than 32 
+  # characters. For additional security, use a different secret key for 
+  # each environment. jwtSecret can be securely generated with the following 
+  # command: LC_ALL=C tr -dc '[:alnum:]' < /dev/random | head -c32
+  #
+  # If you update this secret key, any users who are 
+  # already logged into Redpanda Console will be logged out and will have 
+  # to log in again.
+  jwtSecret: ""
+  # Redpanda Console stores users' session data in cookies with no fixed size.
+  # Because some browsers enforce a maximum size limit on cookies, 
+  # you can enable useCookieChunking to split a single big cookie into multiple 
+  # smaller ones. When you enable useCookieChunking, cookies are kept below 4KiB, 
+  # which is a maximum size limit set by most browsers.
   useCookieChunking: false
   google:
     enabled: false

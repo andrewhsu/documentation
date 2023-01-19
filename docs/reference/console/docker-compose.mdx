@@ -1,22 +1,24 @@
 ---
-title: Docker Compose
+title: Redpanda Docker Compose Templates
 ---
 
 <head>
-    <meta name="title" content="Console configuration template | Redpanda Docs"/>
-    <meta name="description" content="Console configuration template with properties description."/>
+    <meta name="title" content="Redpanda Docker Compose Templates | Redpanda Docs"/>
+    <meta name="description" content="Docker Compose Templates for Redpanda and Redpanda Console."/>
 </head>
 
-If you want to try Console on your local computer you can use this docker-compose.yml to start
-Console along with Redpanda. Copy the YAML into a `docker-compose.yml` file on your computer
-and run `docker compose up` inside of the same directory.
+This `docker-compose.yml` file starts a single Redpanda broker, Redpanda Console, and a sample application that produces messages to topics.
 
 :::note
-To run `docker compose` you have to install Docker on your machine. Please refer to
-[Docker's install guide](https://docs.docker.com/compose/install/).
+To run `docker compose` you must install Docker on your machine. See the
+[Docker documentation](https://docs.docker.com/compose/install/).
 :::
 
-```yaml
+Paste the following YAML into a `docker-compose.yml` file on your computer, and run `docker compose up -d` inside the same directory.
+
+If you are running on an ARM-based device such as the Apple M1 chip, uncomment the `platform: 'linux/amd64'` lines.
+
+```yaml title="docker-compose.yml"
 version: '3.7'
 services:
   redpanda:
@@ -68,6 +70,7 @@ services:
   # browse with Console.
   owl-shop:
     image: quay.io/cloudhut/owl-shop:latest
+    #platform: 'linux/amd64'
     environment:
       - SHOP_KAFKA_BROKERS=redpanda:29092
       - SHOP_KAFKA_TOPICREPLICATIONFACTOR=1
@@ -80,6 +83,7 @@ services:
     image: docker.redpanda.com/vectorized/connectors:1.0.0-dev-dff1c57
     hostname: connect
     container_name: connect
+    #platform: 'linux/amd64'
     depends_on:
       - redpanda
     ports:

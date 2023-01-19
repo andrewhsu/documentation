@@ -37,10 +37,19 @@ Put the following credentials into your Redpanda Console configuration:
 login:
   enabled: true
 
-  # jwtSecret is a random string of at least 10 characters that must be the same for all Console instances. 
-  # This string is used to sign and validate the user session JSON Web Tokens (JWT). 
-  # If this string changes, logged-in Console users will be logged out and will have to initiate a 
-  # new session by logging in again.
+  # jwtSecret is the secret key you must use to sign and encrypt the JSON 
+  # web token used to store user sessions. This secret key is 
+  # critical for the security of Redpanda Console's authentication and 
+  # authorization system. Use a long, complex key with a combination of 
+  # numbers, letters, and special characters. While you must use a minimum of 
+  # 10 characters, Redpanda recommends using more than 32 
+  # characters. For additional security, use a different secret key for 
+  # each environment. jwtSecret can be securely generated with the following 
+  # command: LC_ALL=C tr -dc '[:alnum:]' < /dev/random | head -c32
+  #
+  # If you update this secret key, any users who are 
+  # already logged into Redpanda Console will be logged out and will have 
+  # to log in again.
   jwtSecret: ""
 
   okta:
