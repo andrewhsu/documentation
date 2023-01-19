@@ -129,12 +129,12 @@ When you enable Tiered Storage on a cluster, it becomes enabled for already-exis
 
 Tiered Storage uses the following topic-level properties:
 
-| Flag      | Description |
+| Property      | Description |
 | ----------- | ----------- |
 | `redpanda.remote.write` | Uploads data from Redpanda to cloud storage. Overrides the cluster-level `cloud_storage_enable_remote_write` configuration for the topic. |
 | `redpanda.remote.read` | Fetches data from cloud storage to Redpanda. Overrides the cluster-level `cloud_storage_enable_remote_read` configuration for the topic. |
 | `redpanda.remote.recovery` | Recovers or reproduces a topic from cloud storage. Use this flag during topic creation. It does not apply to existing topics.  |
-| `redpanda.remote.delete` | Deletes a topic and all topic data, including data in remote storage. This requires that both remote read and remote write are enabled, and the topic must not be a Remote Read Replica topic. To delete a topic but retain data in remote storage, set to `false` before deleting the topic.<br/><br/>Default is `true` for new topics, including new topics on upgraded clusters. Default is `false` for topics created prior to release 22.3. |
+| `redpanda.remote.delete` | Deletes a topic and all topic data, including data in remote storage. To delete a topic but retain data in remote storage, set to `false` before deleting the topic. This property requires that both remote read and remote write are enabled, and the topic must not be a Remote Read Replica topic.<br/><br/>Default is `true` for new topics, including new topics on upgraded clusters. Default is `false` for topics created prior to release 22.3. |
 
 Topic configuration flags override any cluster-level configuration. For example, on new topics, if `cloud_storage_enable_remote_write` is set to `true`, you can set `redpanda.remote.write` to `false` to turn it off for a particular topic. Or, if you have Tiered Storage turned off for the cluster, you can enable it for individual topics with the topic flags. When cluster-level properties are changed, the changes apply only to new topics, not existing topics.
 
@@ -242,7 +242,7 @@ rpk topic alter-config <topic_name> --set redpanda.remote.write=true
 If remote write is enabled, log segments are not deleted until they’re uploaded to remote storage. Because of this, the log segments may exceed the configured retention period until they’re uploaded, so the topic might require more disk space. This prevents data loss if segments cannot be uploaded fast enough or if the retention period is very short.
 
 :::note
-Starting in release 22.3, when you delete a topic in Redpanda, the data is also deleted in cloud storage. Topics created prior to release 22.3 can alter their configuration to this behavior on a topic level after upgrading. See [Enable Tiered Storage for a topic](../../manage/tiered-storage/#enable-tiered-storage-for-a-topic)
+Starting in release 22.3, when you delete a topic in Redpanda, the data is also deleted in cloud storage. See [Enable Tiered Storage for a topic](../../manage/tiered-storage/#enable-tiered-storage-for-a-topic)
 :::
 
 ### Idle timeout
