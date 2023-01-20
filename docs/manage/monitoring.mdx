@@ -70,24 +70,6 @@ count(count by (redpanda_topic, redpanda_partition)
 * You can use `rpk` to configure Prometheus, but do not use `rpk` to generate a Grafana dashboard for `public_metrics`.
 :::
 
-## Enable statistics
-
-To identify your cluster's data, so Redpanda can monitor it and alert you to
-possible issues, set the `organization` (your company domain) and
-`cluster_id` (usually your team or project name) configuration fields. For
-example:
-
-```bash
-rpk config set organization 'vectorized.io'
-rpk config set cluster_id 'us-west-2'
-```
-
-To opt out of all metrics reporting, set `rpk.enable_usage_stats` to `false`:
-
-```bash
-rpk config set rpk.enable_usage_stats false
-```
-
 ## Monitor metrics
 
 :::note
