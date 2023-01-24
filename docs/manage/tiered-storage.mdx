@@ -124,7 +124,6 @@ To configure access to Azure Blob Storage with shared keys:
    cloud_storage_azure_shared_key: <azure_account_access_key>
    cloud_storage_azure_storage_account: <azure_account_name>
    cloud_storage_azure_container: <redpanda_container_name>
-   cloud_storage_region: <region>
    ```
    Replace `<variables>` with your own values.
 
@@ -283,7 +282,9 @@ Use the `cloud_storage_segment_max_upload_interval_sec` property to set the numb
 
 Reconciliation is a Redpanda process that runs periodically on every node. It monitors partitions and decides which partitions are uploaded on each node to guarantee that data is uploaded only once. It also balances the workload evenly between nodes. 
 
-Redpanda reacts to partition leadership changes. When leadership rebalancing occurs, the reconciliation process could start uploading to cloud storage from a different node.
+:::note
+After partition leadership rebalancing, Redpanda could change the node that's uploading to cloud storage.
+:::
 
 ### Upload controller
 
@@ -295,9 +296,9 @@ The upload controller prevents Redpanda from running out of disk space. If `remo
 
 Remote read fetches data from cloud storage using the Kafka API. Use remote read in conjunction with remote write to enable Tiered Storage. If you use remote read without remote write, there is nothing for Redpanda to read.
 
-Normally, when data is evicted locally, it is no longer available. If the consumer starts consuming the partition from the beginning, the first offset is the smallest offset available locally. However, if Tiered Storage is enabled with the `redpanda.remote.read` and `redpanda.remote.write` flags, the data is always uploaded to remote storage before it's deleted. This guarantees that the data is always available either locally or remotely.
+In general, when data is evicted locally, it is no longer available. If the consumer starts consuming the partition from the beginning, the first offset is the smallest offset available locally. However, if Tiered Storage is enabled with the `redpanda.remote.read` and `redpanda.remote.write` flags, the data is always uploaded to remote storage before it's deleted. This guarantees that the data is always available either locally or remotely.
 
-When data is available remotely and Tiered Storage is enabled, the client can start consuming data from offset 0, even if the data is no longer stored locally. 
+When data is available remotely and Tiered Storage is enabled, the client can start consuming data, even if the data is no longer stored locally. 
 
 To create a topic with remote read enabled:
 
@@ -346,16 +347,9 @@ rpk topic create <topic_name> -c redpanda.remote.recovery=true -c redpanda.remot
 
 ## Retries and backoff 
 
-If the cloud provider replies with an error message that the server is busy, Redpanda retries the request. Redpanda always uses exponential backoff with cloud connections. Redpanda retries the request if it receives any of the following errors:
+If the cloud provider replies with an error message that the server is busy, Redpanda retries the request. Redpanda may retry other errors, depending on the cloud provider. 
 
-* Connection refused
-* Connection reset by peer
-* Connection timed out
-* Slow down REST API error
-
-For other errors, Redpanda does not retry the request. For example, Redpanda does not retry the request after a `NoSuchKey` error.
-
-You can configure the `cloud_storage_initial_backoff_ms` property to set the time, in milliseconds, that is used as an initial backoff interval in the exponential backoff algorithm to handle an error. Edit it with the `rpk cluster config edit` command. Default is 100 ms.
+Redpanda always uses exponential backoff with cloud connections. You can configure the `cloud_storage_initial_backoff_ms` property to set the time used as an initial backoff interval in the exponential backoff algorithm to handle an error. Edit it with the `rpk cluster config edit` command. Default is 100 ms.
 
 ## Transport 
 
@@ -376,18 +370,20 @@ Redpanda uses the following properties to configure transport. Edit them with th
 
 ## Tiered Storage configuration properties
 
-The list below contains all the available cluster-level configuration properties for Tiered Storage. Edit them with the `rpk cluster config edit` command.
-
-You must configure or verify the following properties before you use Tiered Storage:
+The following list contains cluster-level configuration properties for Tiered Storage. Edit them with the `rpk cluster config edit` command. Configure or verify the following properties before you use Tiered Storage:
 
 | Property      | Description |
 | ----------- | ----------- |
-| `cloud_storage_enabled` | Global flag that enables Tiered Storage. Set to true to enable Tiered Storage. Default is false.  |
-| `cloud_storage_access_key` | Cloud storage access key. Required.  |
-| `cloud_storage_secret_key` | Cloud storage secret key. Required.  |
-| `cloud_storage_region` | Cloud storage region. Required. |
-| `cloud_storage_bucket` | Cloud storage bucket name. Required. |
-| `cloud_storage_api_endpoint` | API endpoint. <br/><br/>- For AWS, this can be left blank. It’s generated automatically using the region and bucket. <br/><br/>- For Google Cloud Service, use `storage.googleapis.com`. |
+| `cloud_storage_enabled` | Global flag that enables Tiered Storage. <br/>Set to true to enable Tiered Storage. Default is false.  |
+| `cloud_storage_region` | Cloud storage region. <br/>Required for AWS and GCS. |
+| `cloud_storage_bucket` | AWS or GCS bucket name. <br/>Required for AWS and GCS. |
+| `cloud_storage_credentials_source` | AWS or GCS instance metadata. <br/>Required for AWS and GCS with IAM roles. |
+| `cloud_storage_access_key` | AWS or GCS access key. <br/>Required for AWS and GCS with access keys. |
+| `cloud_storage_secret_key` | AWS or GCS secret key. <br/>Required for AWS and GCS with access keys.  |
+| `cloud_storage_api_endpoint` | AWS or GCS API endpoint. <br/>- For AWS, this can be left blank. It’s generated automatically using the region and bucket. <br/>- For Google Cloud Service, use `storage.googleapis.com`. |
+| `cloud_storage_azure_container` | Azure container name. <br/>Required for ABS. |
+| `cloud_storage_azure_storage_account` | Azure account name. <br/>Required for ABS. |
+| `cloud_storage_azure_shared_key` | Azure shared key. <br/>Required for ABS. |
 | `cloud_storage_cache_size` | Maximum size of the disk cache used by Tiered Storage. Default is 20GiB. |
 
 In addition, you might want to change the following property in the `redpanda.yaml` file of each node:
